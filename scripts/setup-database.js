@@ -40,6 +40,37 @@ try {
   // Create a simple script to run npm run db:push
   console.log('Running npm run db:push to create database tables...');
   execSync('npm run db:push', { stdio: 'inherit' });
+
+  // Apply additional SQL migrations
+  const migrations = [
+    'migrations/001_add_reset_tokens.sql',
+    'migrations/002_create_session_table.sql'
+  ];
+
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    throw new Error('DATABASE_URL is not set in the environment');
+  }
+
+  // Parse database connection details from DATABASE_URL
+  const url = new URL(dbUrl);
+  const user = url.username;
+  const password = url.password;
+  const host = url.hostname;
+  const port = url.port || '5432';
+  const dbname = url.pathname.replace(/^\//, '');
+
+  migrations.forEach(migration => {
+    console.log(`Applying migration: ${migration}`);
+    try {
+      execSync(`PGPASSWORD=${password} psql -U ${user} -h ${host} -p ${port} -d ${dbname} -f ${migration}`, { stdio: 'inherit' });
+      console.log(`Migration ${migration} applied successfully.`);
+    } catch (err) {
+      console.error(`Error applying migration ${migration}:`, err.message);
+      process.exit(1);
+    }
+  });
+
   console.log('\nDatabase setup completed successfully');
   
   console.log('\nNext steps:');

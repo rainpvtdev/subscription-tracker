@@ -75,6 +75,9 @@ BACKUP_FILES=false
 ### Setting Up the Database
 
 To set up the PostgreSQL database tables:
+== create database ==
+npx tsx scripts/create-database.ts
+
 
 ```bash
 node scripts/setup-database.js

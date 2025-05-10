@@ -1,7 +1,7 @@
-import pkg from 'pg';
-const { Pool } = pkg;
+(async () => {
+  const { Pool } = (await import('pg')).default;
 
-const pool = new Pool({
+  const pool = new Pool({
     host: 'localhost',
     port: 5432,
     database: 'postgres', // Connect to default postgres database
@@ -24,4 +24,5 @@ async function createDatabase() {
     }
 }
 
-createDatabase();
+await createDatabase();
+})();
