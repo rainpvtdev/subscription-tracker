@@ -11,6 +11,7 @@ import { PlusIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 
+
 // Types
 type FilterStatus = "All" | "Active" | "Expired" | "Upcoming";
 
@@ -85,15 +86,12 @@ function SubscriptionsPage() {
     setFilterStatus(status as FilterStatus);
   };
 
+
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900 transition-colors duration-300">
       {/* Sidebar */}
       <Sidebar user={user} />
-      
-      {/* Floating Theme Toggle for quick access */}
       <FloatingThemeToggle />
-      
-      {/* Main content */}
       <div className="md:pl-72">
         <div className="mx-auto flex max-w-7xl flex-col md:px-8">
           {/* Top bar for mobile */}
@@ -114,47 +112,54 @@ function SubscriptionsPage() {
             </div>
           </div>
 
-          {/* Subscriptions content */}
+
           <main className="flex-1">
             <div className="py-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                <h1 className="text-2xl font-semibold text-foreground">Subscriptions</h1>
-              </div>
-              
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                {/* Subscriptions section */}
                 <div className="mt-8">
-                  {/* Header and Add button */}
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-foreground">Manage Your Subscriptions</h2>
-                    <Button
-                      onClick={handleAddSubscription}
-                      className="inline-flex items-center"
-                    >
-                      <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                      Add Subscription
-                    </Button>
+                  <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-200 dark:border-zinc-800 p-8 mb-8 transition-all">
+                    {/* Header and Add button */}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-1 flex items-center">
+                          <span className="inline-block w-2 h-8 rounded bg-purple-600 mr-3"></span>
+                          Manage Your Subscriptions
+                        </h2>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">Easily add, edit, filter, and track all your recurring services in one place.</p>
+                      </div>
+                      <Button
+                        onClick={handleAddSubscription}
+                        className="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white shadow-lg px-6 py-2 rounded-lg text-base font-semibold transition-colors"
+                      >
+                        <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                        Add Subscription
+                      </Button>
+                    </div>
+
+                    {/* Filters and search */}
+                    <div className="mb-4">
+                      <SubscriptionFilter 
+                        filterStatus={filterStatus}
+                        setFilterStatus={handleFilterStatusChange}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                      />
+                    </div>
+
+                    {/* Subscriptions table */}
+                    <div className="overflow-x-auto">
+                      <SubscriptionTable 
+                        subscriptions={paginatedSubscriptions}
+                        isLoading={isLoadingSubscriptions}
+                        onEdit={handleEditSubscription}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                        setCurrentPage={setCurrentPage}
+                      />
+                    </div>
                   </div>
-
-                  {/* Filters and search */}
-                  <SubscriptionFilter 
-                    filterStatus={filterStatus}
-                    setFilterStatus={handleFilterStatusChange}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                  />
-
-                  {/* Subscriptions table */}
-                  <SubscriptionTable 
-                    subscriptions={paginatedSubscriptions}
-                    isLoading={isLoadingSubscriptions}
-                    onEdit={handleEditSubscription}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    setCurrentPage={setCurrentPage}
-                  />
                 </div>
               </div>
             </div>

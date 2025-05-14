@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import Sidebar from "@/components/layout/sidebar";
 import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
+import { Bell, Monitor, Settings as SettingsIcon } from "lucide-react";
 
 export default function Settings() {
   const { user } = useAuth();
@@ -19,7 +20,6 @@ export default function Settings() {
   });
 
   const onSubmit = async (data: any) => {
-    // Handle settings update
     toast({
       title: "Settings updated",
       description: "Your preferences have been saved successfully."
@@ -27,88 +27,61 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 transition-colors duration-300">
       <Sidebar user={user} />
-      
-      {/* Floating Theme Toggle for quick access */}
       <FloatingThemeToggle />
-      
-      {/* Main content */}
+
       <div className="md:pl-72">
-        <div className="mx-auto flex max-w-7xl flex-col md:px-8">
-          {/* Top bar for mobile */}
-          <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 border-b border-border bg-background md:hidden">
-            <button 
-              type="button" 
-              className="border-r border-border px-4 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary md:hidden"
-            >
-              <span className="sr-only">Open sidebar</span>
-              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="flex flex-1 justify-between px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-1 items-center">
-                <h1 className="text-xl font-bold text-primary">SubTrack</h1>
+        <div className="mx-auto max-w-2xl py-12 px-4">
+          <h1 className="text-3xl font-bold text-purple-700 mb-8 flex items-center gap-2">
+            <SettingsIcon className="w-8 h-8" /> Settings
+          </h1>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Notifications Card */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                <Bell className="w-5 h-5" /> Notifications
+              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Email notifications
+                </label>
+                <Switch {...register("emailNotifications")} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Reminder days before due date
+                </label>
+                <Input
+                  type="number"
+                  {...register("reminderDays")}
+                  className="mt-1"
+                />
               </div>
             </div>
-          </div>
-
-          {/* Settings content */}
-          <main className="flex-1">
-            <div className="py-6">
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                <h1 className="text-2xl font-semibold text-foreground">Account Settings</h1>
-              </div>
-              
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                <div className="mt-8 max-w-xl">
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-medium text-foreground">Notifications</h2>
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground">
-                          Email notifications
-                        </label>
-                        <Switch {...register("emailNotifications")} />
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium text-foreground">
-                          Reminder days before due date
-                        </label>
-                        <Input
-                          type="number"
-                          {...register("reminderDays")}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-medium text-foreground">Display</h2>
-                      <div>
-                        <label className="text-sm font-medium text-foreground">
-                          Currency
-                        </label>
-                        <select
-                          {...register("currency")}
-                          className="mt-1 block w-full rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                        >
-                          <option value="USD">USD ($)</option>
-                          <option value="EUR">EUR (€)</option>
-                          <option value="GBP">GBP (£)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <Button type="submit">Save Changes</Button>
-                  </form>
-                </div>
+            {/* Display Card */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                <Monitor className="w-5 h-5" /> Display
+              </h2>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Currency
+                </label>
+                <select
+                  {...register("currency")}
+                  className="mt-1 block w-full rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                >
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
               </div>
             </div>
-          </main>
+            <Button type="submit" className="w-full mt-2">
+              Save Changes
+            </Button>
+          </form>
         </div>
       </div>
     </div>

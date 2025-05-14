@@ -5,6 +5,10 @@ import { setupAuth } from "./auth";
 import { insertSubscriptionSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
+import { hashPassword, comparePasswords } from "./auth";
+const scryptAsync = promisify(scrypt);
 
 export async function registerRoutes(app: Express): Promise<Server> {
     // Setup authentication routes
@@ -198,6 +202,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             const updatedUser = await storage.updateUser(user_id, { name, email });
             res.json(updatedUser);
+        } catch (err) {
+            next(err);
+        }
+    });
+    app.post("/api/user/change-password", isAuthenticated, async (req, res, next) => {
+        try {
+            const user_id = req.user!.id;
+            const { currentPassword, newPassword } = req.body;
+
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ message: "Current and new password are required" });
+            }
+
+            const user = await storage.getUser(user_id);
+            if (!user || !user.password) {
+                return res.status(400).json({ message: "User not found" });
+            }
+           
+            const isMatch = await comparePasswords(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+            
+            // Use hashPassword for new password
+            const newPasswordHash = await hashPassword(newPassword);
+            await storage.updateUser(user_id, { password: newPasswordHash });
+            
+            res.json({ message: "Password changed successfully" });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    app.post("/api/user/deactivate", isAuthenticated, async (req, res, next) => {
+        try {
+            const user_id = req.user!.id;
+            await storage.updateUser(user_id, { deactivated: true });
+            req.logout(() => {
+                res.json({ message: "Account deactivated" });
+            });
         } catch (err) {
             next(err);
         }

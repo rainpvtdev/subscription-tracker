@@ -13,6 +13,7 @@ import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import SubscriptionsPage from "@/pages/subscriptions";
 import { ResetPassword } from "@/components/reset-password";
+import AccountSettings from "@/pages/account-settings";
 
 // Ensure proper theme initialization with smooth transitions
 const setInitialTheme = () => {
@@ -36,17 +37,21 @@ const setInitialTheme = () => {
 // Execute immediately 
 setInitialTheme();
 
+import Landing from "@/pages/landing";
+
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={Dashboard} />
-      <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
-      <ProtectedRoute path="/reports" component={Reports} />
-      <ProtectedRoute path="/settings" component={Settings} />
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/auth/reset-password/:token" component={ResetPassword} />
-      <Route component={NotFound} />
-    </Switch>
+    <Route path="/" component={Landing} />
+    <ProtectedRoute path="/dashboard" component={Dashboard} />
+    <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
+    <ProtectedRoute path="/reports" component={Reports} />
+    <ProtectedRoute path="/settings" component={Settings} />
+    <ProtectedRoute path="/account-settings" component={AccountSettings} /> {/* <-- Add this line */}
+    <Route path="/auth" component={AuthPage} />
+    <Route path="/auth/reset-password/:token" component={ResetPassword} />
+    <Route component={NotFound} />
+  </Switch>
   );
 }
 

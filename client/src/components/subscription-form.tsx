@@ -2,17 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-
-const formSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    category: z.string().min(1, "Category is required"),
-    plan: z.string().min(1, "Plan is required"),
-    amount: z.coerce.number().positive("Amount must be positive"),
-    billing_cycle: z.string().min(1, "Billing cycle is required"),
-    next_payment_date: z.coerce.date().min(new Date(), "Date must be in the future"),
-    reminder: z.string(),
-    notes: z.string().optional(),
-});
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -22,13 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Subscription, categoryOptions, billing_cycleOptions, reminderOptions } from "@shared/schema";
 
-// Props type
 interface SubscriptionFormProps {
     subscription: Subscription | null;
     onClose: () => void;
 }
 
-// Form schema
 const subscriptionFormSchema = z.object({
     name: z.string().min(1, "Service name is required"),
     category: z.string().min(1, "Category is required"),
@@ -139,25 +126,17 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
     // Form submission handler
     const onSubmit = (values: FormValues) => {
         try {
-            console.log("Form submitted with values:", values);
-
             const formattedValues = {
                 ...values,
                 amount: Number(values.amount),
                 next_payment_date: new Date(values.next_payment_date).toISOString(),
             };
-
-            console.log("Formatted values:", formattedValues);
-
             if (subscription) {
-                console.log("Updating subscription:", subscription.id);
                 updateMutation.mutate(formattedValues);
             } else {
-                console.log("Creating new subscription");
                 createMutation.mutate(formattedValues);
             }
         } catch (error) {
-            console.error("Error in form submission:", error);
             toast({
                 title: "Form Error",
                 description: error instanceof Error ? error.message : "An error occurred during form submission",
@@ -167,8 +146,10 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-200 dark:border-zinc-800 p-8 mb-8 transition-all">
+            <h2 className="text-xl font-bold text-purple-700 dark:text-purple-400 mb-6">{subscription ? "Edit Subscription" : "Add New Subscription"}</h2>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="name"
@@ -330,6 +311,7 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
                     </Button>
                 </div>
             </form>
-        </Form>
+            </Form>
+        </div>
     );
 }

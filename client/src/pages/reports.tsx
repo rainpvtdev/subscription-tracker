@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Sidebar from "@/components/layout/sidebar";
 import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 import { Subscription } from "@shared/schema";
+import { TrendingUp, DollarSign, PieChart as PieIcon, Users } from "lucide-react";
 
 export default function Reports() {
     const { user } = useAuth();
@@ -11,101 +12,99 @@ export default function Reports() {
         queryKey: ["/api/subscriptions"],
     });
 
-    const { data: stats } = useQuery({
-        queryKey: ["/api/stats"],
-    });
+    // Example stats
+    const totalSpend = subscriptions.reduce((sum, s) => sum + Number(s.amount), 0);
+    const activeSubs = subscriptions.length;
+    const mostExpensive = subscriptions.reduce((max, s) => Number(s.amount) > max ? Number(s.amount) : max, 0);
 
-    // Calculate spending by category
+    // Spending by category for pie chart
     const spendingByCategory = subscriptions.reduce((acc: Record<string, number>, sub: Subscription) => {
         acc[sub.category] = (acc[sub.category] || 0) + Number(sub.amount);
         return acc;
     }, {});
+    const pieData = Object.entries(spendingByCategory).map(([name, value]) => ({ name, value }));
+    const COLORS = ["#6366F1", "#06b6d4", "#f59e42", "#f43f5e", "#a3e635"];
 
-    const pieData = Object.entries(spendingByCategory).map(([name, value]) => ({
-        name,
-        value,
-    }));
-
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-
-    // Format subscription data for the chart
+    // Chart data for monthly trend
     const chartData = subscriptions.map((sub: Subscription) => ({
         billing_cycle: sub.billing_cycle,
         amount: Number(sub.amount)
     }));
 
     return (
-        <div className="min-h-screen bg-background transition-colors duration-300">
-            {/* Sidebar */}
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 transition-colors duration-300">
             <Sidebar user={user} />
-            
-            {/* Floating Theme Toggle for quick access */}
             <FloatingThemeToggle />
-            
-            {/* Main content */}
+
             <div className="md:pl-72">
-                <div className="mx-auto flex max-w-7xl flex-col md:px-8">
-                    {/* Top bar for mobile */}
-                    <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 border-b border-border bg-background md:hidden">
-                        <button 
-                            type="button" 
-                            className="border-r border-border px-4 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary md:hidden"
-                        >
-                            <span className="sr-only">Open sidebar</span>
-                            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <div className="flex flex-1 justify-between px-4 sm:px-6 lg:px-8">
-                            <div className="flex flex-1 items-center">
-                                <h1 className="text-xl font-bold text-primary">SubTrack</h1>
+                <div className="mx-auto max-w-7xl py-10 px-4">
+                    <h1 className="text-3xl font-bold text-purple-700 mb-8 flex items-center gap-2">
+                        <PieIcon className="w-8 h-8" /> Reports Dashboard
+                    </h1>
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+                            <DollarSign className="w-8 h-8 text-green-500" />
+                            <div>
+                                <div className="text-lg font-semibold text-gray-700">Total Spend</div>
+                                <div className="text-2xl font-bold text-gray-900">${totalSpend.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+                            <Users className="w-8 h-8 text-blue-500" />
+                            <div>
+                                <div className="text-lg font-semibold text-gray-700">Active Subs</div>
+                                <div className="text-2xl font-bold text-gray-900">{activeSubs}</div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
+                            <TrendingUp className="w-8 h-8 text-purple-500" />
+                            <div>
+                                <div className="text-lg font-semibold text-gray-700">Most Expensive</div>
+                                <div className="text-2xl font-bold text-gray-900">${mostExpensive.toFixed(2)}</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Reports content */}
-                    <main className="flex-1">
-                        <div className="py-6">
-                            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                                <h1 className="text-2xl font-semibold text-foreground">Subscription Reports</h1>
-                            </div>
-                            
-                            <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-                                <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
-                                    <div className="bg-card p-6 rounded-lg shadow">
-                                        <h2 className="text-lg font-medium mb-4 text-foreground">Spending by Category</h2>
-                                        <div className="h-80">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <PieChart>
-                                                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                                                        {pieData.map((entry, index) => (
-                                                            <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
-                                                        ))}
-                                                    </Pie>
-                                                    <Tooltip />
-                                                </PieChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-card p-6 rounded-lg shadow">
-                                        <h2 className="text-lg font-medium mb-4 text-foreground">Monthly Spending Trend</h2>
-                                        <div className="h-80">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={chartData}>
-                                                    <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="billing_cycle" />
-                                                    <YAxis />
-                                                    <Tooltip />
-                                                    <Bar dataKey="amount" fill="#8884d8" />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                    </div>
-                                </div>
+                    {/* Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Pie Chart */}
+                        <div className="bg-white rounded-xl shadow p-6">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                                <PieIcon className="w-5 h-5" /> Spending by Category
+                            </h2>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
-                    </main>
+                        {/* Bar Chart */}
+                        <div className="bg-white rounded-xl shadow p-6">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                                <TrendingUp className="w-5 h-5" /> Monthly Spending Trend
+                            </h2>
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="billing_cycle" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Bar dataKey="amount" fill="#6366F1" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

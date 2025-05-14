@@ -35,6 +35,11 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+  /**
+   * Handles authentication-related pages (login, register, forgot password, verification sent)
+   * 
+   * @returns The JSX element for the authentication page.
+   */
 export default function AuthPage() {
   const [view, setView] = useState<AuthView>("login");
   const { user, loginMutation, registerMutation, forgotPasswordMutation } = useAuth();
@@ -44,7 +49,7 @@ export default function AuthPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -99,7 +104,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side - Auth forms */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-background relative">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8  bg-background relative">
         {/* Theme Toggle positioned at top left */}
         <div className="absolute top-4 left-4">
           <ThemeToggle />
@@ -117,7 +122,7 @@ export default function AuthPage() {
                     Or
                     <Button 
                       variant="link" 
-                      className="font-medium text-primary"
+                      className="font-medium text-purple-600"
                       onClick={() => setView("register")}
                     >
                       create a new account
@@ -183,7 +188,7 @@ export default function AuthPage() {
 
                       <Button 
                         variant="link" 
-                        className="font-medium p-0 h-auto"
+                        className="font-medium p-0 h-auto text-purple-600 dark:text-purple-400"
                         onClick={() => setView("forgot-password")}
                         type="button"
                       >
@@ -214,7 +219,7 @@ export default function AuthPage() {
                     Or
                     <Button 
                       variant="link" 
-                      className="font-medium text-primary"
+                      className="font-medium text-purple-600"
                       onClick={() => setView("login")}
                     >
                       sign in to existing account
@@ -334,7 +339,7 @@ export default function AuthPage() {
                     Remember your password?
                     <Button 
                       variant="link" 
-                      className="font-medium text-primary"
+                      className="font-medium text-purple-600 dark:text-purple-400"
                       onClick={() => setView("login")}
                     >
                       Sign in
@@ -403,7 +408,7 @@ export default function AuthPage() {
       </div>
       
       {/* Right side - Hero section */}
-      <div className="hidden md:flex md:flex-1 bg-gradient-to-br from-primary/80 to-primary/40 text-background justify-center items-center p-8">
+      <div className="hidden md:flex md:flex-1 gradient-bg   from-primary/80 to-primary/40 text-background justify-center items-center p-8">
         <div className="max-w-lg">
           <h1 className="text-4xl font-bold mb-6">Subscription Tracker</h1>
           <p className="text-xl mb-4">

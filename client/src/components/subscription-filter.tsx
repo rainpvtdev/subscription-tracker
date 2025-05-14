@@ -16,9 +16,12 @@ export default function SubscriptionFilter({
   setSearchQuery,
 }: SubscriptionFilterProps) {
   return (
-    <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center space-x-2">
-        <span className="text-sm text-gray-700">Show:</span>
+    <div className="bg-white dark:bg-zinc-900 shadow rounded-xl border border-gray-200 dark:border-zinc-800 p-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Filter by status */}
+      <div className="flex items-center gap-2">
+        <label htmlFor="status" className="text-sm font-medium text-foreground">
+          Status:
+        </label>
         <Select
           value={filterStatus}
           onValueChange={setFilterStatus}

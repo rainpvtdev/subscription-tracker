@@ -33,7 +33,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const [location] = useLocation();
   const { logoutMutation } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // Close mobile menu on screen resize
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +41,7 @@ export default function Sidebar({ user }: SidebarProps) {
         setIsMobileMenuOpen(false);
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -51,7 +51,7 @@ export default function Sidebar({ user }: SidebarProps) {
     {
       name: "Dashboard",
       icon: <HomeIcon className="mr-3 h-5 w-5" />,
-      href: "/",
+      href: "/dashboard",
     },
     {
       name: "Subscriptions",
@@ -86,7 +86,7 @@ export default function Sidebar({ user }: SidebarProps) {
     <>
       {/* Mobile menu backdrop */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm transition-opacity md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -99,7 +99,7 @@ export default function Sidebar({ user }: SidebarProps) {
       )}>
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex h-16 flex-shrink-0 items-center justify-between px-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               SubTrack
             </h1>
             <Button
@@ -112,46 +112,46 @@ export default function Sidebar({ user }: SidebarProps) {
               <span className="sr-only">Close sidebar</span>
             </Button>
           </div>
-          
+
           <Separator />
-          
+
           <div className="flex flex-1 flex-col overflow-y-auto py-2 px-4">
             <nav className="space-y-1 py-2">
               {navItems.map((item) => {
                 const isActive = location === item.href;
                 return (
-                  <Link 
-                    key={item.name} 
+                  <Link
+                    key={item.name}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <a
                       className={cn(
                         "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
-                        isActive 
-                          ? "bg-primary/10 text-primary" 
+                        isActive
+                          ? "bg-purple-600 text-white"
                           : "text-foreground/80 hover:bg-muted hover:text-foreground"
                       )}
                     >
                       <span className={cn(
                         "flex-shrink-0 transition-colors",
-                        isActive 
-                          ? "text-primary" 
+                        isActive
+                          ? "text-white"
                           : "text-muted-foreground group-hover:text-foreground"
                       )}>
                         {item.icon}
                       </span>
                       {item.name}
-                      
+
                       {isActive && (
-                        <ChevronRightIcon className="ml-auto h-4 w-4 text-primary" />
+                        <ChevronRightIcon className="ml-auto h-4 w-4 text-white" />
                       )}
                     </a>
                   </Link>
                 );
               })}
             </nav>
-            
+
             <div className="mt-auto pt-4">
               <div className="flex items-center justify-between px-3 pb-2">
                 <span className="text-xs font-medium text-muted-foreground">THEME</span>
@@ -159,14 +159,14 @@ export default function Sidebar({ user }: SidebarProps) {
               </div>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           <div className="flex flex-shrink-0 p-4">
             <div className="w-full">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Avatar className="h-9 w-9 bg-primary/10 text-primary">
+                  <Avatar className="h-9 w-9 bg-purple-600  text-white">
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <div className="ml-3">
@@ -178,10 +178,10 @@ export default function Sidebar({ user }: SidebarProps) {
                     </p>
                   </div>
                 </div>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="ml-1 px-2 h-8 text-xs font-medium text-destructive border-destructive/20 hover:bg-destructive/10"
                   onClick={handleLogout}
                   disabled={logoutMutation.isPending}
@@ -199,13 +199,13 @@ export default function Sidebar({ user }: SidebarProps) {
       <div className="hidden md:fixed md:inset-y-0 md:flex md:w-72 md:flex-col">
         <div className="flex min-h-0 flex-1 flex-col bg-card dark:bg-card border-r border-border">
           <div className="flex h-16 flex-shrink-0 items-center px-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               SubTrack
             </h1>
           </div>
-          
+
           <Separator />
-          
+
           <div className="flex flex-1 flex-col overflow-y-auto pt-3 pb-4">
             <nav className="flex-1 space-y-1 px-4 py-3">
               {navItems.map((item) => {
@@ -215,30 +215,30 @@ export default function Sidebar({ user }: SidebarProps) {
                     <a
                       className={cn(
                         "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
-                        isActive 
-                          ? "bg-primary/10 text-primary" 
+                        isActive
+                          ? "bg-purple-600  text-white"
                           : "text-foreground/80 hover:bg-muted hover:text-foreground"
                       )}
                     >
                       <span className={cn(
                         "flex-shrink-0 transition-colors",
-                        isActive 
-                          ? "text-primary" 
+                        isActive
+                          ? "text-white"
                           : "text-muted-foreground group-hover:text-foreground"
                       )}>
                         {item.icon}
                       </span>
                       {item.name}
-                      
+
                       {isActive && (
-                        <ChevronRightIcon className="ml-auto h-4 w-4 text-primary" />
+                        <ChevronRightIcon className="ml-auto h-4 w-4 text-white" />
                       )}
                     </a>
                   </Link>
                 );
               })}
             </nav>
-            
+
             <div className="mt-auto px-4">
               <div className="flex items-center justify-between px-3 pb-2">
                 <span className="text-xs font-medium text-muted-foreground">THEME</span>
@@ -246,18 +246,18 @@ export default function Sidebar({ user }: SidebarProps) {
               </div>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           <div className="flex flex-shrink-0 p-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full flex items-center justify-start p-2 h-auto hover:bg-muted rounded-lg"
                 >
                   <div className="flex items-center w-full">
-                    <Avatar className="h-9 w-9 bg-primary/10 text-primary">
+                    <Avatar className="h-9 w-9 bg-purple-600 text-white">
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <div className="ml-3 text-left">
@@ -273,12 +273,14 @@ export default function Sidebar({ user }: SidebarProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>
-                  <span className="font-medium">Profile</span>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/account-settings">
+                    <span className="font-medium">Account settings</span>
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Account settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleLogout}
                   disabled={logoutMutation.isPending}
                   className="text-destructive focus:text-destructive"
@@ -303,8 +305,8 @@ export default function Sidebar({ user }: SidebarProps) {
           <MenuIcon className="h-5 w-5" />
           <span className="sr-only">Open sidebar</span>
         </Button>
-        
-        <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent px-2">
+
+        <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent px-2">
           SubTrack
         </h1>
       </div>

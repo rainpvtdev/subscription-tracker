@@ -22,6 +22,10 @@ interface SubscriptionTableProps {
 }
 
 export default function SubscriptionTable({ subscriptions: initialSubscriptions, isLoading, onEdit, currentPage, totalPages, totalItems, itemsPerPage, setCurrentPage }: SubscriptionTableProps) {
+    // Calculate pagination range
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
     const { toast } = useToast();
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [renewingId, setRenewingId] = useState<number | null>(null);
@@ -439,10 +443,7 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
         );
     }
 
-    // Calculate the range of items being displayed
-    const startItem = (currentPage - 1) * itemsPerPage + 1;
-    const endItem = Math.min(startItem + itemsPerPage - 1, totalItems);
-
+    // Main table rendering
     return (
         <div className="mt-6 flex flex-col">
             <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -477,24 +478,39 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                                     <option value="">Sort By</option>
                                     <option value="name-asc">Name (A-Z)</option>
                                     <option value="name-desc">Name (Z-A)</option>
-                                    <option value="date-asc">Next Payment (Earliest)</option>
-                                    <option value="date-desc">Next Payment (Latest)</option>
-                                    <option value="amount-asc">Amount (Low to High)</option>
-                                    <option value="amount-desc">Amount (High to Low)</option>
                                 </select>
+                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-foreground sm:pl-6">
+                                    Service
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Plan
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Amount
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Billing Cycle
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Next Payment
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Status
+                                </th>
+                                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                    <span className="sr-only">Actions</span>
+                                </th>
                             </div>
-
                             <table className="min-w-full divide-y divide-border">
-                                <thead className="bg-muted">
-                                    <tr>
-                                        <th scope="col" className="relative pl-4 pr-3 py-3.5 sm:pl-6 w-12">
-                                            <Checkbox 
-                                                checked={selectAll} 
-                                                onCheckedChange={toggleSelectAll}
-                                                aria-label="Select all subscriptions"
-                                            />
+                                <thead className="bg-background">
+                                    <tr className="divide-y divide-border">
+                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-foreground sm:pl-6">
+                                            #
                                         </th>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-foreground sm:pl-6">
+                                            Name
+                                        </th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
                                             Service
                                         </th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
@@ -616,13 +632,12 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                                     />
                                 </svg>
                             </Button>
-                            {/* Page numbers */}
                             {Array.from({ length: totalPages }).map((_, i) => (
                                 <Button
                                     key={i + 1}
                                     variant={currentPage === i + 1 ? "default" : "outline"}
                                     size="sm"
-                                    className={`${currentPage === i + 1 ? "bg-primary text-primary-foreground" : ""}`}
+                                    className={`${currentPage === i + 1 ? "bg-purple-600  text-primary-foreground" : ""}`}
                                     onClick={() => setCurrentPage(i + 1)}
                                 >
                                     {i + 1}
@@ -641,7 +656,6 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                         </nav>
                     </div>
                 </div>
-            </div>
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deletingId} onOpenChange={(isOpen) => !isOpen && setDeletingId(null)}>
@@ -667,7 +681,6 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
             {/* Renew Confirmation Dialog */}
             <AlertDialog open={!!renewingId} onOpenChange={(isOpen) => !isOpen && setRenewingId(null)}>
                 <AlertDialogContent>
@@ -679,7 +692,7 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleRenew} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                        <AlertDialogAction onClick={handleRenew} className="bg-purple-600 text-primary-foreground hover:bg-primary/90">
                             {renewMutation.isPending ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -720,6 +733,7 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+        </div>
         </div>
     );
 }

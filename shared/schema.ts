@@ -10,7 +10,8 @@ export const users = pgTable("users", {
     email: text("email").notNull().unique(),
     name: text("name"),
     created_at: timestamp("created_at").defaultNow().notNull(),
-});
+    deactivated: boolean("deactivated").default(false).notNull(), // <--- Add this line
+  });
 
 export const insertUserSchema = createInsertSchema(users).pick({
     username: true,

@@ -38,8 +38,10 @@ export default function StatsCard({
         );
       case "negative":
         return (
-          <div className="mt-2 flex items-center text-sm text-red-600">
-            <ArrowDownIcon className="h-5 w-5 flex-shrink-0 self-center text-red-500" />
+          <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 flex flex-col items-center justify-center">
+            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 mb-4">
+              <ArrowDownIcon className="h-5 w-5 flex-shrink-0 self-center text-red-500" />
+            </div>
             <span className="ml-2">{trend.text}</span>
           </div>
         );
