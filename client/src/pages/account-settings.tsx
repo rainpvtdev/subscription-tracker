@@ -7,10 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { User, Mail, Lock, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Sidebar from "@/components/layout/sidebar";
+import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 
 
 export default function AccountSettings() {
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -69,9 +70,15 @@ export default function AccountSettings() {
       if (!res.ok) throw new Error((await res.json()).message || "Failed to change password");
       toast({
         title: "Password changed",
-        description: "Your password has been updated."
+        description: "Your password has been updated. You will be logged out for security reasons."
       });
       reset({ password: "", newPassword: "", confirmNewPassword: "" });
+      
+      // Log the user out after password change
+      setTimeout(() => {
+        logoutMutation.mutate();
+      }, 1500); // Short delay to allow the user to see the success message
+      
     } catch (err: any) {
       toast({
         title: "Error",
@@ -108,38 +115,49 @@ export default function AccountSettings() {
   };
 
   return (
-     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 transition-colors duration-300">
+     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 transition-colors duration-300">
         <Sidebar user={user} />
+        <FloatingThemeToggle />
       
-        <main className="flex-1 flex justify-center items-start py-12 px-4">
+        <main className="flex-1 flex justify-center items-start py-12 px-4 md:pl-72">
       <div className="w-full max-w-2xl space-y-8">
-        <h1 className="text-3xl font-bold text-purple-700 mb-6 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-purple-700 dark:text-purple-400 mb-6 flex items-center gap-2">
           <User className="w-8 h-8" /> Account Settings
         </h1>
 
         {/* Profile Info Card */}
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <CardContent className="p-8 space-y-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
               <Mail className="w-5 h-5" /> Profile Information
             </h2>
             <form onSubmit={handleSubmit(onProfileSubmit)} className="space-y-4">
-              <Input
-                label="Name"
-                {...register("name")}
-                defaultValue={user?.name}
-                placeholder="Your Name"
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <Input
+                  {...register("name")}
+                  defaultValue={user?.name}
+                  placeholder="Your Name"
+                  disabled={loading}
+                  className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <Input
+                  {...register("email")}
+                  defaultValue={user?.email}
+                  placeholder="you@example.com"
+                  type="email"
+                  disabled={loading}
+                  className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full mt-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white transition-colors" 
                 disabled={loading}
-              />
-              <Input
-                label="Email"
-                {...register("email")}
-                defaultValue={user?.email}
-                placeholder="you@example.com"
-                type="email"
-                disabled={loading}
-              />
-              <Button type="submit" className="w-full mt-2" disabled={loading}>
+              >
                 {loading ? "Saving..." : "Save Profile"}
               </Button>
             </form>
@@ -147,34 +165,47 @@ export default function AccountSettings() {
         </Card>
 
         {/* Password Change Card */}
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <CardContent className="p-8 space-y-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
               <Lock className="w-5 h-5" /> Change Password
             </h2>
             <form onSubmit={handleSubmit(onPasswordSubmit)} className="space-y-4">
-              <Input
-                label="Current Password"
-                {...register("password")}
-                type="password"
-                placeholder="Current password"
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
+                <Input
+                  {...register("password")}
+                  type="password"
+                  placeholder="Current password"
+                  disabled={loading}
+                  className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
+                <Input
+                  {...register("newPassword")}
+                  type="password"
+                  placeholder="New password"
+                  disabled={loading}
+                  className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm New Password</label>
+                <Input
+                  {...register("confirmNewPassword")}
+                  type="password"
+                  placeholder="Confirm new password"
+                  disabled={loading}
+                  className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full mt-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white transition-colors" 
                 disabled={loading}
-              />
-              <Input
-                label="New Password"
-                {...register("newPassword")}
-                type="password"
-                placeholder="New password"
-                disabled={loading}
-              />
-              <Input
-                label="Confirm New Password"
-                {...register("confirmNewPassword")}
-                type="password"
-                placeholder="Confirm new password"
-                disabled={loading}
-              />
-              <Button type="submit" className="w-full mt-2" disabled={loading}>
+              >
                 {loading ? "Saving..." : "Change Password"}
               </Button>
             </form>
@@ -182,9 +213,9 @@ export default function AccountSettings() {
         </Card>
 
         {/* Danger Zone Card */}
-        {/* <Card>
+        {/* <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <CardContent className="p-8">
-            <h2 className="text-xl font-semibold flex items-center gap-2 mb-4 text-red-600">
+            <h2 className="text-xl font-semibold flex items-center gap-2 mb-4 text-red-600 dark:text-red-400">
               <Trash2 className="w-5 h-5" /> Danger Zone
             </h2>
             <Button

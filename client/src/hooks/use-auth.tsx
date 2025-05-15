@@ -105,9 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const forgotPasswordMutation = useMutation({
         mutationFn: async (data: { email: string }) => {
             const res = await apiRequest("POST", "/api/forgot-password", data);
+            console.log("res.....", res);
             return await res.json();
         },
         onSuccess: (data) => {
+            console.log("data.....", data);
             toast({
                 title: "Password reset email sent",
                 description: data.message,

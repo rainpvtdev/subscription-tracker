@@ -88,17 +88,17 @@ function SubscriptionsPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 transition-colors duration-300">
       {/* Sidebar */}
       <Sidebar user={user} />
       <FloatingThemeToggle />
       <div className="md:pl-72">
         <div className="mx-auto flex max-w-7xl flex-col md:px-8">
           {/* Top bar for mobile */}
-          <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 border-b border-border bg-background md:hidden">
+          <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm md:hidden">
             <button 
               type="button" 
-              className="border-r border-border px-4 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary md:hidden"
+              className="border-r border-gray-200 dark:border-gray-700 px-4 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 md:hidden"
             >
               <span className="sr-only">Open sidebar</span>
               <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,7 +107,7 @@ function SubscriptionsPage() {
             </button>
             <div className="flex flex-1 justify-between px-4 sm:px-6 lg:px-8">
               <div className="flex flex-1 items-center">
-                <h1 className="text-xl font-bold text-primary">SubTrack</h1>
+                <h1 className="text-xl font-bold text-purple-700 dark:text-purple-400">SubTrack</h1>
               </div>
             </div>
           </div>
@@ -117,19 +117,19 @@ function SubscriptionsPage() {
             <div className="py-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
                 <div className="mt-8">
-                  <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-200 dark:border-zinc-800 p-8 mb-8 transition-all">
+                  <div className="bg-white dark:bg-gray-800 shadow-xl dark:shadow-gray-900/20 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 mb-8 transition-all">
                     {/* Header and Add button */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                       <div>
                         <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-1 flex items-center">
-                          <span className="inline-block w-2 h-8 rounded bg-purple-600 mr-3"></span>
+                          <span className="inline-block w-2 h-8 rounded bg-purple-600 dark:bg-purple-500 mr-3"></span>
                           Manage Your Subscriptions
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 text-sm">Easily add, edit, filter, and track all your recurring services in one place.</p>
                       </div>
                       <Button
                         onClick={handleAddSubscription}
-                        className="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white shadow-lg px-6 py-2 rounded-lg text-base font-semibold transition-colors"
+                        className="inline-flex items-center bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white shadow-lg px-6 py-2 rounded-lg text-base font-semibold transition-colors"
                       >
                         <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                         Add Subscription
@@ -169,9 +169,9 @@ function SubscriptionsPage() {
 
       {/* Subscription Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>{editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}</DialogTitle>
+            <DialogTitle className="dark:text-white">{editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}</DialogTitle>
           </DialogHeader>
           <SubscriptionForm
             subscription={editingSubscription}

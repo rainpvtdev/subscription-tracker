@@ -14,6 +14,7 @@ import Settings from "@/pages/settings";
 import SubscriptionsPage from "@/pages/subscriptions";
 import { ResetPassword } from "@/components/reset-password";
 import AccountSettings from "@/pages/account-settings";
+import { CurrencyProvider } from "@/context/currency-context";
 
 // Ensure proper theme initialization with smooth transitions
 const setInitialTheme = () => {
@@ -82,10 +83,12 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="subscription-tracker-theme" attribute="class" enableSystem>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <div className="min-h-screen flex flex-col bg-background text-foreground">
-            <Router />
-            <Toaster />
-          </div>
+          <CurrencyProvider>
+            <div className="min-h-screen flex flex-col bg-background text-foreground">
+              <Router />
+              <Toaster />
+            </div>
+          </CurrencyProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

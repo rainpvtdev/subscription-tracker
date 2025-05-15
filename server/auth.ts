@@ -16,7 +16,7 @@ dotenv.config();
 
 declare global {
     namespace Express {
-        interface User extends SelectUser {}
+        interface User extends SelectUser { }
     }
 }
 
@@ -24,7 +24,7 @@ const scryptAsync = promisify(scrypt);
 
 // Email configuration
 const transporter = nodemailer.createTransport({
-    host:  process.env.EMAIL_HOST,
+    host: process.env.EMAIL_HOST,
     port: 465,
     secure: true,
     auth: {
@@ -46,7 +46,7 @@ async function generateResetToken(userId: number): Promise<string> {
 // Send password reset email
 async function sendResetEmail(email: string, resetToken: string): Promise<void> {
     const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password/${resetToken}`;
-    
+
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
@@ -78,16 +78,30 @@ const scheduleReminderEmails = () => {
             // Check each subscription for upcoming payment
             for (const sub of subscriptions) {
                 const nextPaymentDate = new Date(sub.next_payment_date);
+                
+                // Get user and their preferences
+                const user = await storage.getUser(sub.user_id);
+                if (!user) continue;
+                
+                // Skip if email notifications are disabled
+                if (!user.emailNotifications) continue;
+                
+                // Use the user's preferred reminder days (default to 1 if not set)
+                const reminderDays = user.reminderDays || 1;
+                
+                // Calculate the reminder date based on user preference
                 const reminderDate = new Date(nextPaymentDate);
-                reminderDate.setDate(reminderDate.getDate() - 1); // Day before due
-
+                reminderDate.setDate(reminderDate.getDate() - reminderDays);
+                
+                // Check if today is the reminder date
                 if (isSameDay(reminderDate, new Date())) {
-                    // Get user email
-                    const user = await storage.getUser(sub.user_id);
-                    if (!user) continue;
-
                     // Send reminder email
-                    await sendReminderEmail(user.email, sub);
+                    await sendReminderEmail(user.email, {
+                        ...sub,
+                        user // Add user info to be accessed in the email template
+                    });
+                    
+                    console.log(`Sent reminder email to ${user.email} for subscription ${sub.name} due in ${reminderDays} days`);
                 }
             }
         } catch (error) {
@@ -99,8 +113,8 @@ const scheduleReminderEmails = () => {
 // Helper function to check if two dates are on the same day
 function isSameDay(date1: Date, date2: Date): boolean {
     return date1.getDate() === date2.getDate() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getFullYear() === date2.getFullYear();
+        date1.getMonth() === date2.getMonth() &&
+        date1.getFullYear() === date2.getFullYear();
 }
 
 // Send reminder email
@@ -169,6 +183,9 @@ export function setupAuth(app: Express) {
                 const user = await storage.getUserByUsername(username);
                 if (!user || !(await comparePasswords(password, user.password))) {
                     return done(null, false);
+                }
+                if (user.deactivated) {
+                    return done(null, false, { message: "Account is deactivated" });
                 }
                 return done(null, user);
             } catch (err) {
@@ -267,7 +284,7 @@ export function setupAuth(app: Express) {
     app.post("/api/reset-password", async (req, res, next) => {
         try {
             const { token, password } = req.body;
-            
+
             // Validate input
             if (!token || !password) {
                 return res.status(400).json({ message: "Token and password are required" });

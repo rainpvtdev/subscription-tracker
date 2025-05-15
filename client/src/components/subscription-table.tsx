@@ -9,6 +9,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import React from "react";
+import { formatCurrency } from "@/lib/utils";
+import { useCurrency } from "@/context/currency-context";
 
 interface SubscriptionTableProps {
     subscriptions: Subscription[];
@@ -27,6 +29,7 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
     const { toast } = useToast();
+    const { currency } = useCurrency();
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [renewingId, setRenewingId] = useState<number | null>(null);
     const [selectedSort, setSelectedSort] = useState<string>("");
@@ -326,6 +329,11 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
         });
     };
 
+    // Format amount for display
+    const formatAmount = (amount: string | number) => {
+        return formatCurrency(amount, currency);
+    };
+
     // Generate category icon based on subscription category
     const getCategoryIcon = (category: string) => {
         switch (category.toLowerCase()) {
@@ -553,7 +561,7 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                                                 </div>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">{subscription.plan}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">${Number(subscription.amount).toFixed(2)}</td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">{formatAmount(subscription.amount)}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">{subscription.billing_cycle}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">{formatDate(subscription.next_payment_date)}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">
@@ -659,16 +667,16 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deletingId} onOpenChange={(isOpen) => !isOpen && setDeletingId(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to delete this subscription?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="dark:text-white">Delete this subscription?</AlertDialogTitle>
+                        <AlertDialogDescription className="dark:text-gray-300">
                             This will permanently delete the subscription "{subscriptionToDelete?.name}". This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700">
+                        <AlertDialogCancel className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600">
                             {deleteMutation.isPending ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -683,16 +691,16 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
             </AlertDialog>
             {/* Renew Confirmation Dialog */}
             <AlertDialog open={!!renewingId} onOpenChange={(isOpen) => !isOpen && setRenewingId(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Renew this subscription?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="dark:text-white">Renew this subscription?</AlertDialogTitle>
+                        <AlertDialogDescription className="dark:text-gray-300">
                             This will extend "{subscriptionToRenew?.name}" subscription for another {subscriptionToRenew?.billing_cycle.toLowerCase()} period. The next payment date will be updated accordingly.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleRenew} className="bg-purple-600 text-primary-foreground hover:bg-primary/90">
+                        <AlertDialogCancel className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRenew} className="bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600">
                             {renewMutation.isPending ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -711,16 +719,16 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
 
             {/* Bulk Delete Confirmation Dialog */}
             <AlertDialog open={isBulkDeleting} onOpenChange={(isOpen) => !isOpen && setIsBulkDeleting(false)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Multiple Subscriptions?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="dark:text-white">Delete Multiple Subscriptions?</AlertDialogTitle>
+                        <AlertDialogDescription className="dark:text-gray-300">
                             This will permanently delete {selectedItems.length} subscription(s). This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600 text-white hover:bg-red-700">
+                        <AlertDialogCancel className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete} className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600">
                             {bulkDeleteMutation.isPending ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

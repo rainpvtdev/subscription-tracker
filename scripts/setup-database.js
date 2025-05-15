@@ -45,7 +45,8 @@ try {
   const migrations = [
     'migrations/001_add_reset_tokens.sql',
     'migrations/002_create_session_table.sql',
-    'migrations/003_add_deactivated_to_users.sql'
+    'migrations/003_add_deactivated_to_users.sql',
+    'migrations/004_add_currency_and_notification_preferences_to_users.sql'
   ];
 
   const dbUrl = process.env.DATABASE_URL;

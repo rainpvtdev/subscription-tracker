@@ -32,37 +32,43 @@ export default function Reports() {
     }));
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 transition-colors duration-300">
             <Sidebar user={user} />
             <FloatingThemeToggle />
 
             <div className="md:pl-72">
                 <div className="mx-auto max-w-7xl py-10 px-4">
-                    <h1 className="text-3xl font-bold text-purple-700 mb-8 flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-purple-700 dark:text-purple-400 mb-8 flex items-center gap-2">
                         <PieIcon className="w-8 h-8" /> Reports Dashboard
                     </h1>
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-                            <DollarSign className="w-8 h-8 text-green-500" />
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 flex items-center gap-4 transition-colors">
+                            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                                <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
+                            </div>
                             <div>
-                                <div className="text-lg font-semibold text-gray-700">Total Spend</div>
-                                <div className="text-2xl font-bold text-gray-900">${totalSpend.toFixed(2)}</div>
+                                <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Total Spend</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white">${totalSpend.toFixed(2)}</div>
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-                            <Users className="w-8 h-8 text-blue-500" />
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 flex items-center gap-4 transition-colors">
+                            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            </div>
                             <div>
-                                <div className="text-lg font-semibold text-gray-700">Active Subs</div>
-                                <div className="text-2xl font-bold text-gray-900">{activeSubs}</div>
+                                <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Active Subs</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white">{activeSubs}</div>
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-                            <TrendingUp className="w-8 h-8 text-purple-500" />
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 flex items-center gap-4 transition-colors">
+                            <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                            </div>
                             <div>
-                                <div className="text-lg font-semibold text-gray-700">Most Expensive</div>
-                                <div className="text-2xl font-bold text-gray-900">${mostExpensive.toFixed(2)}</div>
+                                <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Most Expensive</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white">${mostExpensive.toFixed(2)}</div>
                             </div>
                         </div>
                     </div>
@@ -70,35 +76,43 @@ export default function Reports() {
                     {/* Charts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Pie Chart */}
-                        <div className="bg-white rounded-xl shadow p-6">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 transition-colors">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
                                 <PieIcon className="w-5 h-5" /> Spending by Category
                             </h2>
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
-                                        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                                        <Pie 
+                                            data={pieData} 
+                                            dataKey="value" 
+                                            nameKey="name" 
+                                            cx="50%" 
+                                            cy="50%" 
+                                            outerRadius={100} 
+                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                        >
                                             {pieData.map((entry, index) => (
                                                 <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip />
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none' }} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
                         {/* Bar Chart */}
-                        <div className="bg-white rounded-xl shadow p-6">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 transition-colors">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
                                 <TrendingUp className="w-5 h-5" /> Monthly Spending Trend
                             </h2>
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={chartData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="billing_cycle" />
-                                        <YAxis />
-                                        <Tooltip />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                                        <XAxis dataKey="billing_cycle" stroke="#888" />
+                                        <YAxis stroke="#888" />
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none' }} />
                                         <Bar dataKey="amount" fill="#6366F1" />
                                     </BarChart>
                                 </ResponsiveContainer>

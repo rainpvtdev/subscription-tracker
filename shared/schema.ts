@@ -10,7 +10,8 @@ export const users = pgTable("users", {
     email: text("email").notNull().unique(),
     name: text("name"),
     created_at: timestamp("created_at").defaultNow().notNull(),
-    deactivated: boolean("deactivated").default(false).notNull(), // <--- Add this line
+    deactivated: boolean("deactivated").default(false).notNull(),
+    currency: text("currency").default("USD").notNull(), // Add currency field
   });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -71,6 +72,9 @@ export const reminderOptions = ["None", "1 day before", "3 days before", "1 week
 // Define status options
 export const statusOptions = ["active", "expired", "renewing soon", "canceled"] as const;
 
+// Define currency options
+export const currencyOptions = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "INR", "CNY"] as const;
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -80,3 +84,4 @@ export type Category = (typeof categoryOptions)[number];
 export type billing_cycle = (typeof billing_cycleOptions)[number];
 export type Reminder = (typeof reminderOptions)[number];
 export type Status = (typeof statusOptions)[number];
+export type Currency = (typeof currencyOptions)[number];

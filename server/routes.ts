@@ -206,6 +206,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
             next(err);
         }
     });
+
+    // Update user settings (including currency)
+    app.put("/api/user/settings", isAuthenticated, async (req, res, next) => {
+        try {
+            // Extract user settings from request
+            const { currency, ...otherSettings } = req.body;
+            const user_id = req.user!.id;
+            
+            // Validate currency if provided
+            if (currency) {
+                // You could add more validation here if needed
+            }
+            
+            // Update user in database with new settings
+            const updatedUser = await storage.updateUser(user_id, { 
+              currency, 
+              ...otherSettings 
+            });
+            
+            res.json(updatedUser);
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                const validationError = fromZodError(err);
+                return res.status(400).json({ message: validationError.message });
+            }
+            next(err);
+        }
+    });
+
     app.post("/api/user/change-password", isAuthenticated, async (req, res, next) => {
         try {
             const user_id = req.user!.id;
