@@ -262,6 +262,7 @@ export function setupAuth(app: Express) {
         try {
             const { email } = req.body;
             const user = await storage.getUserByEmail(email);
+            console.log("user.....", user);
 
             if (!user) {
                 // Don't reveal that the email doesn't exist for security reasons
@@ -270,6 +271,7 @@ export function setupAuth(app: Express) {
 
             // Generate reset token
             const resetToken = await generateResetToken(user.id);
+            console.log("resetToken.....", resetToken);
 
             // Send reset email
             await sendResetEmail(email, resetToken);

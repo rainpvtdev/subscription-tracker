@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Subscription, categoryOptions, billing_cycleOptions, reminderOptions } from "@shared/schema";
+import { useCurrency } from "@/context/currency-context";
+import { useState } from "react";
 
 interface SubscriptionFormProps {
     subscription: Subscription | null;
@@ -45,12 +47,28 @@ type FormValues = z.infer<typeof subscriptionFormSchema>;
 
 export default function SubscriptionForm({ subscription, onClose }: SubscriptionFormProps) {
     const { toast } = useToast();
+    const { currency: userCurrency } = useCurrency();
 
     // Format the date for the form
     const formatDateForInput = (date: Date | string | null | undefined): string => {
         if (!date) return "";
         const d = new Date(date);
         return d.toISOString().split("T")[0];
+    };
+
+    // Function to get currency symbol based on currency code
+    const getCurrencySymbol = (currencyCode: string): string => {
+        const currencySymbols: Record<string, string> = {
+            "USD": "$",
+            "EUR": "€",
+            "GBP": "£",
+            "JPY": "¥",
+            "CAD": "CAD $",
+            "AUD": "AUD $",
+            "INR": "₹",
+            "CNY": "¥"
+        };
+        return currencySymbols[currencyCode] || currencyCode;
     };
 
     // Initialize form with default values or existing subscription data
@@ -75,6 +93,7 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
             const res = await apiRequest("POST", "/api/subscriptions", {
                 ...data,
                 status: "active", // Default status for new subscriptions
+                currency: userCurrency,
             });
             return await res.json();
         },
@@ -102,6 +121,7 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
             const res = await apiRequest("PUT", `/api/subscriptions/${subscription?.id}`, {
                 ...data,
                 status: subscription?.status || "active",
+                currency: userCurrency,
             });
             return await res.json();
         },
@@ -203,7 +223,7 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
                     )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="amount"
@@ -213,9 +233,9 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
                                 <FormControl>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span className="text-gray-500 sm:text-sm">$</span>
+                                            <span className="text-gray-500 sm:text-sm">{getCurrencySymbol(userCurrency)}</span>
                                         </div>
-                                        <Input type="number" step="0.01" placeholder="0.00" {...field} className="pl-7" />
+                                        <Input type="number" step="0.01" {...field} className="pl-7" />
                                     </div>
                                 </FormControl>
                                 <FormMessage />
