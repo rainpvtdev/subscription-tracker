@@ -376,7 +376,7 @@ export default function Landing() {
                             </div>
                         </div>
                         <div>
-                            <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Product</h4>
+                            <h4 className="text-lg font-semibold mb-4  text-white">Product</h4>
                             <ul className="space-y-2">
                                 <li><a href="#" className="text-gray-400 hover:text-white">Features</a></li>
                                 <li><a href="#" className="text-gray-400 hover:text-white">Pricing</a></li>
@@ -385,7 +385,7 @@ export default function Landing() {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Resources</h4>
+                            <h4 className="text-lg font-semibold mb-4 text-white">Resources</h4>
                             <ul className="space-y-2">
                                 <li><a href="#" className="text-gray-400 hover:text-white">Blog</a></li>
                                 <li><a href="#" className="text-gray-400 hover:text-white">Help Center</a></li>
@@ -394,7 +394,7 @@ export default function Landing() {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Company</h4>
+                            <h4 className="text-lg font-semibold mb-4 text-white">Company</h4>
                             <ul className="space-y-2">
                                 <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
                                 <li><a href="#" className="text-gray-400 hover:text-white">Careers</a></li>
