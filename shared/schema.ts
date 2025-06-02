@@ -12,6 +12,8 @@ export const users = pgTable("users", {
     created_at: timestamp("created_at").defaultNow().notNull(),
     deactivated: boolean("deactivated").default(false).notNull(),
     currency: text("currency").default("USD").notNull(), // Add currency field
+    reminder_days: integer("reminder_days").default(3), // Using snake_case to match DB
+    email_notifications: boolean("email_notifications").default(true), // Using snake_case to match DB
   });
 
 export const insertUserSchema = createInsertSchema(users).pick({

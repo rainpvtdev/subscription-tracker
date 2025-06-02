@@ -167,7 +167,7 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
 
     return (
         <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-200 dark:border-zinc-800 p-8 mb-8 transition-all">
-            <h2 className="text-xl font-bold text-purple-700 dark:text-purple-400 mb-6">{subscription ? "Edit Subscription" : "Add New Subscription"}</h2>
+            {/* <h2 className="text-xl font-bold text-purple-700 dark:text-purple-400 mb-6">{subscription ? "Edit Subscription" : "Add New Subscription"}</h2> */}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField

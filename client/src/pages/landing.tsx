@@ -1,9 +1,47 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Faq from "../components/faq";
 import { ThemeToggle } from "../components/theme-toggle";
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 
 export default function Landing() {
+    // Image carousel configuration
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+
+    const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+    const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
+    }, [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+
+        onSelect();
+        setScrollSnaps(emblaApi.scrollSnapList());
+        emblaApi.on('select', onSelect);
+        
+        // Auto-play functionality
+        const autoplay = setInterval(() => {
+            if (emblaApi.canScrollNext()) {
+                emblaApi.scrollNext();
+            } else {
+                emblaApi.scrollTo(0);
+            }
+        }, 5000); // Change image every 5 seconds
+
+        return () => {
+            clearInterval(autoplay);
+            emblaApi.off('select', onSelect);
+        };
+    }, [emblaApi, onSelect]);
+
     return (
         <main className="font-sans antialiased text-gray-800 dark:text-gray-200 dark:bg-slate-900 transition-colors duration-200">
 
@@ -149,7 +187,7 @@ export default function Landing() {
                     <div className="flex flex-col md:flex-row items-center mb-12">
                         <div className="md:w-1/2 mb-8 md:mb-0">
                             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md inline-block">
-                            <img src="/image/Add-subscriptionfile.jpg" alt="Add subscription screen" className="rounded-lg w-full max-w-md" />   
+                            <img src="/image/add-subscription.png" alt="Add subscription screen" className="rounded-lg w-full max-w-md" />   
                             </div>
                         </div>
                         <div className="md:w-1/2 md:pl-12">
@@ -179,7 +217,7 @@ export default function Landing() {
                 </div>
             </section>
 
-            <section id="pricing" className="py-20 bg-gray-50 dark:bg-gray-800">
+            {/* <section id="pricing" className="py-20 bg-gray-50 dark:bg-gray-800">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">Simple, Transparent Pricing</h2>
@@ -219,7 +257,7 @@ export default function Landing() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             <section id="opensource" className="py-20 bg-gray-900 text-white">
                 <div className="container mx-auto px-6">
@@ -228,10 +266,10 @@ export default function Landing() {
                             <h2 className="text-3xl md:text-4xl font-bold mb-6">Proudly Open Source</h2>
                             <p className="text-xl mb-8 opacity-90">SubTrack is built with transparency in mind. Our code is open for anyone to inspect, modify, and contribute to.</p>
                             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                                <a href="https://github.com/rainpvtdev/subscription-tracker" className="bg-white text-gray-900 hover:bg-gray-200 px-6 py-3 rounded-lg text-lg font-semibold transition-colors">
+                                <a href="https://github.com/rainpvtdev/subscription-tracker" target="_blank" className="bg-white text-gray-900 hover:bg-gray-200 px-6 py-3 rounded-lg text-lg font-semibold transition-colors">
                                     <i className="fab fa-github mr-2"></i> View on GitHub
                                 </a>
-                                <a href="https://github.com/rainpvtdev/subscription-tracker/blob/main/README.md" className="border-2 border-white hover:bg-white hover:bg-opacity-10 px-6 py-3 rounded-lg text-lg font-semibold transition-colors">
+                                <a href="https://github.com/rainpvtdev/subscription-tracker/blob/main/README.md" target="_blank" className="border-2 border-white hover:bg-white hover:bg-opacity-10 px-6 py-3 rounded-lg text-lg font-semibold transition-colors">
                                     Documentation
                                 </a>
                             </div>
@@ -255,79 +293,18 @@ export default function Landing() {
                                     $ npm run dev
 
                                 </pre>
-                                <div className="mt-4 flex items-center text-sm text-gray-400">
+                                {/* <div className="mt-4 flex items-center text-sm text-gray-400">
                                     <i className="fas fa-star mr-2"></i>
                                     <span className="mr-4">1,240 GitHub Stars</span>
                                     <i className="fas fa-code-branch mr-2"></i>
                                     <span>85 Contributors</span>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section className="py-20 bg-gray-50 dark:bg-gray-800">
-                <div className="container mx-auto px-6">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">What Our Users Say</h2>
-                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Don't just take our word for it - hear from our community</p>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md">
-                            <div className="flex items-center mb-4">
-                                <img src="https://randomuser.me/api/portraits/women/43.jpg" className="w-12 h-12 rounded-full mr-4" alt="User" />
-                                <div>
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">Sarah Johnson</h4>
-                                    <p className="text-gray-500 dark:text-gray-300 text-sm">Marketing Director</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-300 mb-4">"SubTrack helped me realize I was paying for three different music services. I canceled two and saved over $20/month!"</p>
-                            <div className="flex text-yellow-400">
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md">
-                            <div className="flex items-center mb-4">
-                                <img src="https://randomuser.me/api/portraits/men/32.jpg" className="w-12 h-12 rounded-full mr-4" alt="User" />
-                                <div>
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">Michael Chen</h4>
-                                    <p className="text-gray-500 dark:text-gray-300 text-sm">Software Engineer</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-300 mb-4">"As a developer, I appreciate the open-source nature of SubTrack. I've even contributed a few small features to the project."</p>
-                            <div className="flex text-yellow-400">
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md">
-                            <div className="flex items-center mb-4">
-                                <img src="https://randomuser.me/api/portraits/women/28.jpg" className="w-12 h-12 rounded-full mr-4" alt="User" />
-                                <div>
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">Emily Rodriguez</h4>
-                                    <p className="text-gray-500 dark:text-gray-300 text-sm">Small Business Owner</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-300 mb-4">"The family plan is perfect for us. We can track both personal and business subscriptions in one place."</p>
-                            <div className="flex text-yellow-400">
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star"></i>
-                                <i className="fas fa-star-half-alt"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <section className="py-20 gradient-bg text-white">
                 <div className="container mx-auto px-6 text-center">
@@ -335,7 +312,7 @@ export default function Landing() {
                     <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">Join thousands of users who are saving money and reducing subscription clutter.</p>
                     <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <a href="/auth" className="bg-white text-purple-600 hover:bg-gray-100 dark:hover:bg-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors">Get Started for Free</a>
-                        <a href="/demo" className="border-2 border-white hover:bg-white hover:bg-opacity-10 dark:border-gray-500 dark:hover:bg-gray-500 px-8 py-4 rounded-lg text-lg font-semibold transition-colors">Watch Demo</a>
+                        {/* <a href="/demo" className="border-2 border-white hover:bg-white hover:bg-opacity-10 dark:border-gray-500 dark:hover:bg-gray-500 px-8 py-4 rounded-lg text-lg font-semibold transition-colors">Watch Demo</a> */}
                     </div>
                 </div>
             </section>
@@ -361,54 +338,13 @@ export default function Landing() {
 
             <footer className="bg-gray-900 text-white pt-16 pb-8">
                 <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
-                        <div>
-                            <div className="flex items-center mb-4">
-                                <i className="fas fa-wallet text-2xl text-purple-400 mr-2"></i>
-                                <span className="text-xl font-bold">SubTrack</span>
-                            </div>
-                            <p className="text-gray-400 mb-4">Take control of your subscriptions and save money.</p>
-                            <div className="flex space-x-4">
-                                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-twitter"></i></a>
-                                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-github"></i></a>
-                                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-discord"></i></a>
-                                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-linkedin"></i></a>
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-lg font-semibold mb-4  text-white">Product</h4>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-400 hover:text-white">Features</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Pricing</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Roadmap</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Changelog</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-lg font-semibold mb-4 text-white">Resources</h4>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-400 hover:text-white">Blog</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Help Center</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">API Docs</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Community</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-lg font-semibold mb-4 text-white">Company</h4>
-                            <ul className="space-y-2">
-                                <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Careers</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Privacy</a></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white">Terms</a></li>
-                            </ul>
-                        </div>
-                    </div>
+                
                     <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-                        <p className="text-gray-400 mb-4 md:mb-0"> 2023 SubTrack. All rights reserved.</p>
+                        <p className="text-gray-400 mb-4 md:mb-0"> <span className="ftcptst">Crafted with passion 🤍 by <a href="https://www.raininfotech.com/" target="_blank">Rain Infotech</a></span></p>
                         <div className="flex space-x-6">
-                            <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>
-                            <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a>
-                            <a href="#" className="text-gray-400 hover:text-white">Cookie Policy</a>
+                        <span className="ftcptst lghide">All Rights Reserved 2023-
+                            <script>document.write(new Date().getFullYear())</script>2025
+                        </span>
                         </div>
                     </div>
                 </div>

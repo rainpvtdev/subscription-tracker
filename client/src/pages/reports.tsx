@@ -5,9 +5,12 @@ import Sidebar from "@/components/layout/sidebar";
 import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 import { Subscription } from "@shared/schema";
 import { TrendingUp, DollarSign, PieChart as PieIcon, Users } from "lucide-react";
+import { useCurrency } from "@/context/currency-context";
+import { formatCurrency, getCurrencySymbol } from "@/lib/utils";
 
 export default function Reports() {
     const { user } = useAuth();
+    const { currency } = useCurrency();
     const { data: subscriptions = [] } = useQuery<Subscription[]>({
         queryKey: ["/api/subscriptions"],
     });
@@ -50,7 +53,7 @@ export default function Reports() {
                             </div>
                             <div>
                                 <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Total Spend</div>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">${totalSpend.toFixed(2)}</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalSpend, currency)}</div>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/10 p-6 flex items-center gap-4 transition-colors">
@@ -68,7 +71,7 @@ export default function Reports() {
                             </div>
                             <div>
                                 <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Most Expensive</div>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">${mostExpensive.toFixed(2)}</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(mostExpensive, currency)}</div>
                             </div>
                         </div>
                     </div>
@@ -111,7 +114,7 @@ export default function Reports() {
                                     <BarChart data={chartData}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                                         <XAxis dataKey="billing_cycle" stroke="#888" />
-                                        <YAxis stroke="#888" />
+                                        <YAxis stroke="#888" tickFormatter={(value) => `${getCurrencySymbol(currency)}${value}`} />
                                         <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none' }} />
                                         <Bar dataKey="amount" fill="#6366F1" />
                                     </BarChart>

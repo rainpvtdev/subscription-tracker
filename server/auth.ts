@@ -22,7 +22,6 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
-// Email configuration
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: 465,
@@ -32,7 +31,7 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     },
     tls: {
-        rejectUnauthorized: false // Only for testing, remove in production
+        rejectUnauthorized: true // Only for testing, remove in production
     }
 });
 
@@ -63,8 +62,12 @@ async function sendResetEmail(email: string, resetToken: string): Promise<void> 
             </div>
         `
     };
-
-    await transporter.sendMail(mailOptions);
+    console.log("mailOptions", mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error sending reset email:', error);
+    }
 }
 
 // Schedule reminder emails
@@ -84,10 +87,10 @@ const scheduleReminderEmails = () => {
                 if (!user) continue;
                 
                 // Skip if email notifications are disabled
-                if (!user.emailNotifications) continue;
+                if (!user.email_notifications) continue;
                 
                 // Use the user's preferred reminder days (default to 1 if not set)
-                const reminderDays = user.reminderDays || 1;
+                const reminderDays = user.reminder_days || 1;
                 
                 // Calculate the reminder date based on user preference
                 const reminderDate = new Date(nextPaymentDate);
