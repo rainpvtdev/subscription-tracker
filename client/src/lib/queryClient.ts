@@ -31,6 +31,8 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      // Add cache control for GET requests
+      cache: queryKey[1]?.cache === false ? 'no-store' : 'default',
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
@@ -45,10 +47,11 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      refetchOnWindowFocus: true, // Refresh data when window regains focus
+      staleTime: 30 * 1000, // Consider data stale after 30 seconds
+      cacheTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
+      retry: 1, // Retry failed requests once
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
     mutations: {
       retry: false,
