@@ -204,7 +204,7 @@ function Dashboard() {
             {/* Filters and search */}
             <SubscriptionFilter
               filterStatus={filterStatus}
-              setFilterStatus={setFilterStatus}
+              setFilterStatus={(status: string) => setFilterStatus(status as FilterStatus)}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />

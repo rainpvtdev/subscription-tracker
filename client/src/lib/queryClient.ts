@@ -36,12 +36,24 @@ export const getQueryFn: <T>(options: {
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      // Suppress 401 error, do not log or throw
       return null;
     }
-
-    await throwIfResNotOk(res);
+    try {
+      await throwIfResNotOk(res);
+    } catch (err: any) {
+      // Only suppress 401 errors, rethrow others
+      if (res.status === 401) {
+        return null;
+      }
+      throw err;
+    }
     return await res.json();
   };
+
+export function isLoggedIn(user: any): boolean {
+  return !!(user && typeof user === 'object' && (user.id || user.username || user.email));
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {

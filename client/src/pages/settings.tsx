@@ -24,8 +24,8 @@ export default function Settings() {
   // Form with default values
   const { register, handleSubmit, setValue, watch } = useForm({
     defaultValues: {
-      email_notifications: currentUser?.email_notifications ?? true,
-      reminder_days: currentUser?.reminder_days ?? 3,
+      emailNotifications: currentUser?.email_notifications ?? true,
+      reminderDays: currentUser?.reminder_days ?? 3,
       currency: currentUser?.currency || currency || "USD"
     }
   });
@@ -34,15 +34,15 @@ export default function Settings() {
   useEffect(() => {
     if (currentUser) {
       setValue("currency", currentUser.currency || "USD");
-      setValue("email_notifications", currentUser.email_notifications ?? true);
-      setValue("reminder_days", currentUser.reminder_days ?? 3);
+      setValue("emailNotifications", currentUser.email_notifications ?? true);
+      setValue("reminderDays", currentUser.reminder_days ?? 3);
     }
   }, [currentUser, setValue]);
   
   // Watch the values to provide immediate feedback
   const selectedCurrency = watch("currency") as Currency;
-  const emailNotifications = watch("email_notifications");
-  const reminderDays = watch("reminder_days");
+  const emailNotifications = watch("emailNotifications");
+  const reminderDays = watch("reminderDays");
   
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -76,8 +76,8 @@ export default function Settings() {
     // Send all settings to the backend
     updateSettingsMutation.mutate({
       currency: data.currency,
-      email_notifications: data.email_notifications,
-      reminder_days: parseInt(data.reminder_days, 10)
+      emailNotifications: data.emailNotifications,
+      reminderDays: parseInt(data.reminderDays, 10)
     });
   };
 
@@ -103,7 +103,7 @@ export default function Settings() {
                 </label>
                 <Switch 
                   checked={emailNotifications}
-                  onCheckedChange={(checked) => setValue("email_notifications", checked)}
+                  onCheckedChange={(checked) => setValue("emailNotifications", checked)}
                   className="data-[state=checked]:bg-purple-600 dark:data-[state=checked]:bg-purple-500"
                 />
               </div>
@@ -115,7 +115,7 @@ export default function Settings() {
                   type="number"
                   min="1"
                   max="30"
-                  {...register("reminder_days")}
+                  {...register("reminderDays")}
                   className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   disabled={!emailNotifications}
                 />

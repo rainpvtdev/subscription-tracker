@@ -53,13 +53,18 @@ function Router() {
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
         <Route path="/" component={Landing} />
-        <ProtectedRoute path="/dashboard" component={Dashboard} />
-        <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
-        <ProtectedRoute path="/reports" component={Reports} />
-        <ProtectedRoute path="/settings" component={Settings} />
-        <ProtectedRoute path="/account-settings" component={AccountSettings} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/auth/reset-password/:token" component={ResetPassword} />
+        {/* Wrap protected routes in AuthProvider and CurrencyProvider */}
+        <AuthProvider>
+          <CurrencyProvider>
+            <ProtectedRoute path="/dashboard" component={Dashboard} />
+            <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
+            <ProtectedRoute path="/reports" component={Reports} />
+            <ProtectedRoute path="/settings" component={Settings} />
+            <ProtectedRoute path="/account-settings" component={AccountSettings} />
+          </CurrencyProvider>
+        </AuthProvider>
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -92,14 +97,10 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="subscription-tracker-theme" attribute="class" enableSystem>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <CurrencyProvider>
-            <div className="min-h-screen flex flex-col bg-background text-foreground">
-              <Router />
-              <Toaster />
-            </div>
-          </CurrencyProvider>
-        </AuthProvider>
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
+          <Router />
+          <Toaster />
+        </div>
       </QueryClientProvider>
     </ThemeProvider>
   );

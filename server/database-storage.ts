@@ -1,4 +1,10 @@
-import { eq, asc, desc, count } from "drizzle-orm";
+import { eq, asc, desc, count, inArray, gte, lte, and } from "drizzle-orm";
+
+import { PgColumn } from "drizzle-orm/pg-core";
+
+const VALID_SUBSCRIPTION_SORT_FIELDS = Object.keys(subscriptions).filter(
+    key => subscriptions[key as keyof typeof subscriptions] instanceof PgColumn
+);
 import { db } from "./db";
 import { users, subscriptions, resetTokens } from "@shared/schema";
 import { type User, type Subscription } from "@shared/schema";
@@ -127,35 +133,32 @@ export class DatabaseStorage implements IStorage {
             const offset = (page - 1) * limit;
             
             // Start building the query
-            let query = db.select().from(subscriptions).where(eq(subscriptions.user_id, user_id));
-            
-            // Add optional filters if provided
-            if (status) {
-                query = query.where(eq(subscriptions.status, status));
-            }
-            
-            if (category) {
-                query = query.where(eq(subscriptions.category, category));
-            }
-            
+            // Build filter conditions
+            const conditions = [eq(subscriptions.user_id, user_id)];
+            if (status) conditions.push(eq(subscriptions.status, status));
+            if (category) conditions.push(eq(subscriptions.category, category));
+
             // Execute count query to get total items
-            const countQuery = db.select({ count: count() }).from(subscriptions)
-                .where(eq(subscriptions.user_id, user_id));
-                
-            // Add the same filters to count query
-            if (status) {
-                countQuery.where(eq(subscriptions.status, status));
-            }
-            
-            if (category) {
-                countQuery.where(eq(subscriptions.category, category));
-            }
-            
-            const [{ count: total }] = await countQuery;
-            
+            const [{ count: total }] = await db
+                .select({ count: count() })
+                .from(subscriptions)
+                .where(and(...conditions));
+
+
+
             // Execute the paginated query with sorting
-            const data = await query
-                .orderBy(sort_order === 'asc' ? asc(subscriptions[sort_by as keyof typeof subscriptions]) : desc(subscriptions[sort_by as keyof typeof subscriptions]))
+            let sortField: string = VALID_SUBSCRIPTION_SORT_FIELDS.includes(sort_by) ? sort_by : 'next_payment_date';
+            let sortColumn = subscriptions[sortField as keyof typeof subscriptions];
+            // Fallback: if sortColumn is not a PgColumn, use next_payment_date
+            if (!(sortColumn instanceof PgColumn)) {
+                sortField = 'next_payment_date';
+                sortColumn = subscriptions['next_payment_date'];
+            }
+            const data = await db
+                .select()
+                .from(subscriptions)
+                .where(and(...conditions))
+                .orderBy(sort_order === 'asc' ? asc(sortColumn as PgColumn<any, any, any>) : desc(sortColumn as PgColumn<any, any, any>))
                 .limit(limit)
                 .offset(offset);
             
@@ -237,30 +240,36 @@ export class DatabaseStorage implements IStorage {
         }
     }
 
+    /**
+     * Returns stats about a user's subscriptions: active count, normalized monthly cost, upcoming renewals and cost.
+     */
     async getSubscriptionStats(user_id: number): Promise<SubscriptionStats> {
         try {
-            // Get active subscription count directly from database
-            const [activeCountResult] = await db
-                .select({ count: db.fn.count(subscriptions.id) })
+            // Count active subscriptions
+            const activeCountResult = await db
+                .select({ count: count() })
                 .from(subscriptions)
-                .where(eq(subscriptions.user_id, user_id))
-                .where(eq(subscriptions.status, "active"));
-            
-            const activeCount = Number(activeCountResult?.count || 0);
-            
-            // Get all active subscriptions in a single query for cost calculations
+                .where(and(
+                    eq(subscriptions.user_id, user_id),
+                    eq(subscriptions.status, "active")
+                ));
+            console.log('activeCountResult:', activeCountResult);
+            const activeCount = Array.isArray(activeCountResult) && activeCountResult.length > 0 && typeof activeCountResult[0].count !== 'undefined' ? Number(activeCountResult[0].count) : 0;
+
+            // Get all active/renewing soon subscriptions for cost calculations
             const activeSubscriptions = await db
                 .select()
                 .from(subscriptions)
-                .where(eq(subscriptions.user_id, user_id))
-                .where(db.sql`${subscriptions.status} IN ('active', 'renewing soon')`);
-            
+                .where(and(
+                    eq(subscriptions.user_id, user_id),
+                    inArray(subscriptions.status, ['active', 'renewing soon'])
+                ));
+
             // Calculate monthly cost (normalize all billing cycles to monthly)
             let monthlyCost = 0;
-            activeSubscriptions.forEach((sub) => {
+            activeSubscriptions.forEach((sub: Subscription): void => {
                 const amount = Number(sub.amount);
                 if (isNaN(amount)) return;
-
                 switch (sub.billing_cycle) {
                     case "Monthly":
                         monthlyCost += amount;
@@ -281,17 +290,17 @@ export class DatabaseStorage implements IStorage {
             const now = new Date();
             const sevenDaysLater = new Date();
             sevenDaysLater.setDate(now.getDate() + 7);
-            
-            // Use a targeted query for upcoming renewals
             const upcomingRenewals = await db
                 .select()
                 .from(subscriptions)
-                .where(eq(subscriptions.user_id, user_id))
-                .where(db.sql`${subscriptions.next_payment_date} >= ${now}`)
-                .where(db.sql`${subscriptions.next_payment_date} <= ${sevenDaysLater}`);
+                .where(and(
+                    eq(subscriptions.user_id, user_id),
+                    gte(subscriptions.next_payment_date, now),
+                    lte(subscriptions.next_payment_date, sevenDaysLater)
+                ));
 
             // Calculate cost of upcoming renewals
-            const upcomingCost = upcomingRenewals.reduce((total, sub) => {
+            const upcomingCost = upcomingRenewals.reduce((total: number, sub: Subscription): number => {
                 const amount = Number(sub.amount);
                 return isNaN(amount) ? total : total + amount;
             }, 0);
