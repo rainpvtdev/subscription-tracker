@@ -1,10 +1,4 @@
-import { eq, asc, desc, count, inArray, gte, lte, and } from "drizzle-orm";
-
-import { PgColumn } from "drizzle-orm/pg-core";
-
-const VALID_SUBSCRIPTION_SORT_FIELDS = Object.keys(subscriptions).filter(
-    key => subscriptions[key as keyof typeof subscriptions] instanceof PgColumn
-);
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { users, subscriptions, resetTokens } from "@shared/schema";
 import { type User, type Subscription } from "@shared/schema";
@@ -22,14 +16,7 @@ export class DatabaseStorage implements IStorage {
     constructor() {
         this.sessionStore = new PostgresSessionStore({
             pool,
-            tableName: 'session',
-            createTableIfMissing: true,
-            pruneSessionInterval: 60 * 15, // Prune expired sessions every 15 minutes
-            errorLog: console.error,
-            conObject: {
-                connectionTimeoutMillis: 1000, // End the query if it takes more than 1 second
-                statement_timeout: 1000 // End the query if it takes more than 1 second
-            }
+            tableName: 'session'
         });
     }
 
@@ -90,92 +77,6 @@ export class DatabaseStorage implements IStorage {
 
     async getSubscriptionsByuser_id(user_id: number): Promise<Subscription[]> {
         return db.select().from(subscriptions).where(eq(subscriptions.user_id, user_id));
-    }
-
-    /**
-     * Get paginated subscriptions for a user with sorting and filtering
-     * @param user_id The user ID to get subscriptions for
-     * @param page Page number (1-based)
-     * @param limit Number of items per page
-     * @param sort_by Field to sort by (must be a valid subscription field)
-     * @param sort_order 'asc' or 'desc'
-     * @param status Optional status filter
-     * @param category Optional category filter
-     * @returns Object containing paginated results and total count
-     */
-    async getPaginatedSubscriptions(
-        user_id: number,
-        page: number = 1,
-        limit: number = 10,
-        sort_by: string = 'next_payment_date',
-        sort_order: 'asc' | 'desc' = 'asc',
-        status?: string,
-        category?: string
-    ): Promise<{ data: Subscription[], total: number, page: number, limit: number, total_pages: number }> {
-        try {
-            // Validate sort_by to prevent SQL injection
-            const validSortFields = [
-                'id', 'user_id', 'name', 'category', 'plan', 
-                'amount', 'billing_cycle', 'next_payment_date', 
-                'status', 'reminder', 'created_at', 'updated_at'
-            ];
-            
-            if (!validSortFields.includes(sort_by)) {
-                sort_by = 'next_payment_date'; // Default to a safe value if invalid
-            }
-            
-            // Ensure sort_order is valid
-            if (sort_order !== 'asc' && sort_order !== 'desc') {
-                sort_order = 'asc';
-            }
-            
-            // Calculate offset from page number
-            const offset = (page - 1) * limit;
-            
-            // Start building the query
-            // Build filter conditions
-            const conditions = [eq(subscriptions.user_id, user_id)];
-            if (status) conditions.push(eq(subscriptions.status, status));
-            if (category) conditions.push(eq(subscriptions.category, category));
-
-            // Execute count query to get total items
-            const [{ count: total }] = await db
-                .select({ count: count() })
-                .from(subscriptions)
-                .where(and(...conditions));
-
-
-
-            // Execute the paginated query with sorting
-            let sortField: string = VALID_SUBSCRIPTION_SORT_FIELDS.includes(sort_by) ? sort_by : 'next_payment_date';
-            let sortColumn = subscriptions[sortField as keyof typeof subscriptions];
-            // Fallback: if sortColumn is not a PgColumn, use next_payment_date
-            if (!(sortColumn instanceof PgColumn)) {
-                sortField = 'next_payment_date';
-                sortColumn = subscriptions['next_payment_date'];
-            }
-            const data = await db
-                .select()
-                .from(subscriptions)
-                .where(and(...conditions))
-                .orderBy(sort_order === 'asc' ? asc(sortColumn as PgColumn<any, any, any>) : desc(sortColumn as PgColumn<any, any, any>))
-                .limit(limit)
-                .offset(offset);
-            
-            // Calculate total pages
-            const total_pages = Math.ceil(Number(total) / limit);
-            
-            return {
-                data,
-                total: Number(total),
-                page,
-                limit,
-                total_pages
-            };
-        } catch (error) {
-            console.error('Error in getPaginatedSubscriptions:', error);
-            throw error;
-        }
     }
 
     async createSubscription(insertSubscription: { user_id: number; name: string; category: string; plan: string; amount: number; billing_cycle: string; next_payment_date: Date; status?: string; reminder?: string; notes?: string }): Promise<Subscription> {
@@ -240,81 +141,59 @@ export class DatabaseStorage implements IStorage {
         }
     }
 
-    /**
-     * Returns stats about a user's subscriptions: active count, normalized monthly cost, upcoming renewals and cost.
-     */
     async getSubscriptionStats(user_id: number): Promise<SubscriptionStats> {
-        try {
-            // Count active subscriptions
-            const activeCountResult = await db
-                .select({ count: count() })
-                .from(subscriptions)
-                .where(and(
-                    eq(subscriptions.user_id, user_id),
-                    eq(subscriptions.status, "active")
-                ));
-            console.log('activeCountResult:', activeCountResult);
-            const activeCount = Array.isArray(activeCountResult) && activeCountResult.length > 0 && typeof activeCountResult[0].count !== 'undefined' ? Number(activeCountResult[0].count) : 0;
+        // Get all user subscriptions
+        const userSubscriptions = await this.getSubscriptionsByuser_id(user_id);
 
-            // Get all active/renewing soon subscriptions for cost calculations
-            const activeSubscriptions = await db
-                .select()
-                .from(subscriptions)
-                .where(and(
-                    eq(subscriptions.user_id, user_id),
-                    inArray(subscriptions.status, ['active', 'renewing soon'])
-                ));
+        // Calculate active count
+        const activeCount = userSubscriptions.filter((sub) => sub.status === "active").length;
 
-            // Calculate monthly cost (normalize all billing cycles to monthly)
-            let monthlyCost = 0;
-            activeSubscriptions.forEach((sub: Subscription): void => {
-                const amount = Number(sub.amount);
-                if (isNaN(amount)) return;
-                switch (sub.billing_cycle) {
-                    case "Monthly":
-                        monthlyCost += amount;
-                        break;
-                    case "Quarterly":
-                        monthlyCost += amount / 3;
-                        break;
-                    case "Semi-Annually":
-                        monthlyCost += amount / 6;
-                        break;
-                    case "Annually":
-                        monthlyCost += amount / 12;
-                        break;
-                }
-            });
+        // Calculate monthly cost (normalize all billing cycles to monthly)
+        let monthlyCost = 0;
+        userSubscriptions.forEach((sub) => {
+            if (sub.status !== "active" && sub.status !== "renewing soon") return;
 
-            // Calculate upcoming renewals in the next 7 days
-            const now = new Date();
-            const sevenDaysLater = new Date();
-            sevenDaysLater.setDate(now.getDate() + 7);
-            const upcomingRenewals = await db
-                .select()
-                .from(subscriptions)
-                .where(and(
-                    eq(subscriptions.user_id, user_id),
-                    gte(subscriptions.next_payment_date, now),
-                    lte(subscriptions.next_payment_date, sevenDaysLater)
-                ));
+            const amount = Number(sub.amount);
+            if (isNaN(amount)) return;
 
-            // Calculate cost of upcoming renewals
-            const upcomingCost = upcomingRenewals.reduce((total: number, sub: Subscription): number => {
-                const amount = Number(sub.amount);
-                return isNaN(amount) ? total : total + amount;
-            }, 0);
+            switch (sub.billing_cycle) {
+                case "Monthly":
+                    monthlyCost += amount;
+                    break;
+                case "Quarterly":
+                    monthlyCost += amount / 3;
+                    break;
+                case "Semi-Annually":
+                    monthlyCost += amount / 6;
+                    break;
+                case "Annually":
+                    monthlyCost += amount / 12;
+                    break;
+            }
+        });
 
-            return {
-                activeCount,
-                monthlyCost,
-                upcomingRenewals: upcomingRenewals.length,
-                upcomingCost,
-            };
-        } catch (error) {
-            console.error('Error in getSubscriptionStats:', error);
-            throw error;
-        }
+        // Calculate upcoming renewals in the next 7 days
+        const now = new Date();
+        const sevenDaysLater = new Date();
+        sevenDaysLater.setDate(now.getDate() + 7);
+
+        const upcomingRenewals = userSubscriptions.filter((sub) => {
+            const nextPayment = new Date(sub.next_payment_date);
+            return nextPayment >= now && nextPayment <= sevenDaysLater;
+        });
+
+        // Calculate cost of upcoming renewals
+        const upcomingCost = upcomingRenewals.reduce((total, sub) => {
+            const amount = Number(sub.amount);
+            return isNaN(amount) ? total : total + amount;
+        }, 0);
+
+        return {
+            activeCount,
+            monthlyCost,
+            upcomingRenewals: upcomingRenewals.length,
+            upcomingCost,
+        };
     }
 
     async getActiveSubscriptions(): Promise<Subscription[]> {

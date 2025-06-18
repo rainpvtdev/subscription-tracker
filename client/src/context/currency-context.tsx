@@ -1,5 +1,5 @@
 import { Currency } from "@shared/schema";
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useMutation } from "@tanstack/react-query";
 import { updateUserSettings } from "@/api";
@@ -12,8 +12,9 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const { user, refetch: refetchUser } = useUser();
-  const [currency, setCurrencyState] = useState<Currency>(user?.currency || "USD");
+  // Only fetch user data when needed
+  const { user, refetch: refetchUser } = useUser(false);
+  const [currency, setCurrencyState] = useState<Currency>("USD");
   
   // Update currency when user data changes
   useEffect(() => {
@@ -29,15 +30,23 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
   });
   
-  const setCurrency = async (newCurrency: Currency) => {
+  const setCurrency = useCallback(async (newCurrency: Currency) => {
     // Set locally immediately for responsive UI
     setCurrencyState(newCurrency);
     
-    // Update in backend
+    // Update in backend if we have a user
     if (user?.id) {
-      await updateUser({ currency: newCurrency });
+      try {
+        await updateUser({ currency: newCurrency });
+      } catch (error) {
+        console.error('Failed to update currency:', error);
+        // Revert on error
+        if (user?.currency) {
+          setCurrencyState(user.currency);
+        }
+      }
     }
-  };
+  }, [updateUser, user?.id, user?.currency]);
   
   return (
     <CurrencyContext.Provider value={{ currency, setCurrency }}>

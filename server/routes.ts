@@ -33,44 +33,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
     });
 
-    // Get paginated subscriptions for a user with sorting and filtering
-    app.get("/api/subscriptions/paginated", isAuthenticated, async (req, res, next) => {
-        try {
-            const user_id = req.user!.id;
-            
-            // Get pagination parameters from query string
-            // Using snake_case for all parameters to match database field naming convention
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
-            const sort_by = (req.query.sort_by as string) || 'next_payment_date';
-            const sort_order = (req.query.sort_order as string === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc';
-            const status = req.query.status as string | undefined;
-            const category = req.query.category as string | undefined;
-            
-            // Validate parameters
-            if (page < 1 || limit < 1 || limit > 100) {
-                return res.status(400).json({ 
-                    message: "Invalid pagination parameters. Page must be >= 1 and limit must be between 1 and 100."
-                });
-            }
-            
-            const result = await storage.getPaginatedSubscriptions(
-                user_id,
-                page,
-                limit,
-                sort_by,
-                sort_order,
-                status,
-                category
-            );
-            
-            res.json(result);
-        } catch (err) {
-            console.error("Error fetching paginated subscriptions:", err);
-            next(err);
-        }
-    });
-
     // Get a single subscription
     app.get("/api/subscriptions/:id", isAuthenticated, async (req, res, next) => {
         try {
@@ -101,8 +63,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     app.post("/api/subscriptions", isAuthenticated, async (req, res, next) => {
         try {
             const user_id = req.user!.id;
-            console.log("Creating subscription for user:", user_id);
-            console.log("Request body:", req.body);
+           // console.log("Creating subscription for user:", user_id);
+            // console.log("Request body:", req.body);
 
             // Ensure next_payment_date is properly formatted
             let formData = { ...req.body, user_id };
@@ -119,15 +81,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
             }
 
-            console.log("Processed form data:", formData);
+           // console.log("Processed form data:", formData);
 
             try {
                 // Validate request body
                 const validatedData = insertSubscriptionSchema.parse(formData);
-                console.log("Validated data:", validatedData);
+                //console.log("Validated data:", validatedData);
 
                 const subscription = await storage.createSubscription(validatedData);
-                console.log("Created subscription:", subscription);
+                //console.log("Created subscription:", subscription);
 
                 res.status(201).json(subscription);
             } catch (validationError) {

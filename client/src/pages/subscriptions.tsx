@@ -29,7 +29,18 @@ function SubscriptionsPage() {
 
   // Fetch subscriptions data
   const { data: subscriptions = [], isLoading: isLoadingSubscriptions } = useQuery<Subscription[]>({
-    queryKey: ["/api/subscriptions"],
+    queryKey: ["subscriptions"],
+    queryFn: async () => {
+      const response = await fetch("/api/subscriptions", {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscriptions');
+      }
+      return response.json();
+    },
+    enabled: !!user, // Only fetch if user is authenticated
+    retry: false
   });
 
   // Filter and search subscriptions
@@ -63,6 +74,7 @@ function SubscriptionsPage() {
     startIndex + itemsPerPage
   );
 
+  console.log("paginatedSubscriptions",paginatedSubscriptions);
   // Handle adding a new subscription
   const handleAddSubscription = () => {
     setEditingSubscription(null);

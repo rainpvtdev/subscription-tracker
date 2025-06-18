@@ -1,30 +1,5 @@
 import { Currency } from "@shared/schema";
 
-// Utility to check for session cookie (default express-session name is 'connect.sid')
-function hasSessionCookie(cookieName = 'connect.sid'): boolean {
-  return document.cookie.split(';').some((c) => c.trim().startsWith(cookieName + '='));
-}
-
-/**
- * Fetches the current user data
- * @returns The user data
- */
-export async function fetchCurrentUser(): Promise<any> {
-  if (!hasSessionCookie()) {
-    // No session cookie, skip API call
-    const response = await fetch('/api/user', {
-      credentials: 'include',
-    });
-    if (!response.ok) {
-      // If unauthorized, treat as not logged in
-      if (response.status === 401) return null;
-      throw new Error('Failed to fetch user data');
-    }
-    return response.json();
-  }
- 
-}
-
 interface UserSettings {
   currency?: Currency;
   name?: string;
@@ -56,6 +31,21 @@ export async function updateUserSettings(settings: UserSettings): Promise<any> {
   return response.json();
 }
 
+/**
+ * Fetches the current user data
+ * @returns The user data
+ */
+export async function fetchCurrentUser(): Promise<any> {
+  const response = await fetch('/api/user', {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch user data');
+  }
+  
+  return response.json();
+}
 
 /**
  * Updates user password

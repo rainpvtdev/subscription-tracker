@@ -1,30 +1,20 @@
-import React, { useEffect, lazy, Suspense } from "react";
+import React, { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
+import Dashboard from "@/pages/dashboard";
+import AuthPage from "@/pages/auth-page";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { ThemeProvider } from "./components/theme-provider";
+import Reports from "@/pages/reports";
+import Settings from "@/pages/settings";
+import SubscriptionsPage from "@/pages/subscriptions";
+import { ResetPassword } from "@/components/reset-password";
+import AccountSettings from "@/pages/account-settings";
 import { CurrencyProvider } from "@/context/currency-context";
-
-// Lazy load components for code splitting
-const NotFound = lazy(() => import("@/pages/not-found"));
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const AuthPage = lazy(() => import("@/pages/auth-page"));
-const Reports = lazy(() => import("@/pages/reports"));
-const Settings = lazy(() => import("@/pages/settings"));
-const SubscriptionsPage = lazy(() => import("@/pages/subscriptions"));
-const ResetPassword = lazy(() => import("@/components/reset-password"));
-const AccountSettings = lazy(() => import("@/pages/account-settings"));
-const Landing = lazy(() => import("@/pages/landing"));
-
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
 
 // Ensure proper theme initialization with smooth transitions
 const setInitialTheme = () => {
@@ -48,26 +38,21 @@ const setInitialTheme = () => {
 // Execute immediately 
 setInitialTheme();
 
+import Landing from "@/pages/landing";
+
 function Router() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/auth" component={AuthPage} />
-        <Route path="/auth/reset-password/:token" component={ResetPassword} />
-        {/* Wrap protected routes in AuthProvider and CurrencyProvider */}
-        <AuthProvider>
-          <CurrencyProvider>
-            <ProtectedRoute path="/dashboard" component={Dashboard} />
-            <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
-            <ProtectedRoute path="/reports" component={Reports} />
-            <ProtectedRoute path="/settings" component={Settings} />
-            <ProtectedRoute path="/account-settings" component={AccountSettings} />
-          </CurrencyProvider>
-        </AuthProvider>
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <Switch>
+    <Route path="/" component={Landing} />
+    <ProtectedRoute path="/dashboard" component={Dashboard} />
+    <ProtectedRoute path="/subscriptions" component={SubscriptionsPage} />
+    <ProtectedRoute path="/reports" component={Reports} />
+    <ProtectedRoute path="/settings" component={Settings} />
+    <ProtectedRoute path="/account-settings" component={AccountSettings} /> {/* <-- Add this line */}
+    <Route path="/auth" component={AuthPage} />
+    <Route path="/auth/reset-password/:token" component={ResetPassword} />
+    <Route component={NotFound} />
+  </Switch>
   );
 }
 
@@ -97,10 +82,14 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="subscription-tracker-theme" attribute="class" enableSystem>
       <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <Router />
-          <Toaster />
-        </div>
+        <AuthProvider>
+          <CurrencyProvider>
+            <div className="min-h-screen flex flex-col bg-background text-foreground">
+              <Router />
+              <Toaster />
+            </div>
+          </CurrencyProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

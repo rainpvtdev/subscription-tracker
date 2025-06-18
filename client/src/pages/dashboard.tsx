@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Subscription } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
@@ -32,9 +32,49 @@ function Dashboard() {
   const { currency } = useCurrency();
 
   // Fetch subscriptions data
-  const { data: subscriptions = [], isLoading: isLoadingSubscriptions } = useQuery<Subscription[]>({
-    queryKey: ["/api/subscriptions"],
+  const { 
+    data: subscriptions = [], 
+    isLoading: isLoadingSubscriptions, 
+    error: subscriptionError 
+  } = useQuery<Subscription[]>({
+    queryKey: ["subscriptions"],
+    queryFn: async (): Promise<Subscription[]> => {
+      console.log('Fetching subscriptions...');
+      try {
+        const response = await fetch('/api/subscriptions', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        console.log('Subscription response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Subscription fetch error:', errorText);
+          throw new Error(`Failed to fetch subscriptions: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json() as Subscription[];
+        console.log('Fetched subscriptions:', data);
+        return data;
+      } catch (err) {
+        console.error('Error in subscription query:', err);
+        throw err;
+      }
+    },
+    enabled: !!user, // Only fetch if user is authenticated
+    retry: false
   });
+  
+  useEffect(() => {
+    if (subscriptionError) {
+      console.error('Subscription fetch failed:', subscriptionError);
+    }
+  }, [subscriptionError]);
+  
+  console.log('Dashboard render - subscriptions:', subscriptions, 'loading:', isLoadingSubscriptions, 'error:', subscriptionError);
 
   // Fetch stats data
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -73,6 +113,8 @@ function Dashboard() {
     startIndex,
     startIndex + itemsPerPage
   );
+
+  console.log("subscriptions",subscriptions);
 
   // Pie chart: spending by category
   const spendingByCategory = subscriptions.reduce((acc, sub) => {
@@ -204,7 +246,7 @@ function Dashboard() {
             {/* Filters and search */}
             <SubscriptionFilter
               filterStatus={filterStatus}
-              setFilterStatus={(status: string) => setFilterStatus(status as FilterStatus)}
+              setFilterStatus={setFilterStatus}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />

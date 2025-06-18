@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, numeric, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -39,13 +39,6 @@ export const subscriptions = pgTable("subscriptions", {
     reminder: text("reminder").default("none"),
     notes: text("notes"),
     created_at: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-    return {
-        user_id_idx: index("user_id_idx").on(table.user_id),
-        status_idx: index("status_idx").on(table.status),
-        next_payment_date_idx: index("next_payment_date_idx").on(table.next_payment_date),
-        user_status_idx: index("user_status_idx").on(table.user_id, table.status)
-    };
 });
 
 // Add reset tokens table to schema
@@ -57,7 +50,7 @@ export const resetTokens = pgTable("reset_tokens", {
     created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Define insert schema for subscriptions
+
 export const insertSubscriptionSchema = createInsertSchema(subscriptions)
     .omit({
         id: true,

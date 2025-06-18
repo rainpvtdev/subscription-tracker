@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AuthProvider } from "@/hooks/use-auth";
-import { isLoggedIn } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -42,7 +40,7 @@ const forgotPasswordSchema = z.object({
    * 
    * @returns The JSX element for the authentication page.
    */
-function AuthPageInner() {
+export default function AuthPage() {
   const [view, setView] = useState<AuthView>("login");
   const { user, loginMutation, registerMutation, forgotPasswordMutation } = useAuth();
   const { toast } = useToast();
@@ -102,17 +100,6 @@ function AuthPageInner() {
       onSuccess: () => setView("verification-sent")
     });
   };
-
-  // Use isLoggedIn to check login status
-  if (user === undefined) {
-    // Still loading user status
-    return <div className="flex items-center justify-center min-h-screen"><span>Loading...</span></div>;
-  }
-  if (isLoggedIn(user)) {
-    // Already logged in, redirect to dashboard
-    window.location.href = "/dashboard";
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -451,12 +438,4 @@ function AuthPageInner() {
       </div>
     </div>
   );
-};
-
-const AuthPage = () => (
-  <AuthProvider>
-    <AuthPageInner />
-  </AuthProvider>
-);
-
-export default AuthPage;
+}

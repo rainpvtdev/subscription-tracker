@@ -459,35 +459,56 @@ export default function SubscriptionTable({ subscriptions: initialSubscriptions,
                     <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 md:rounded-lg">
                         <div className="bg-background">
                             <div className="mb-4 flex items-center space-x-4 p-4">
-  <select
-    className="rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-    value={selectedBulkAction}
-    onChange={(e) => setSelectedBulkAction(e.target.value)}
-  >
-    <option value="">Bulk Actions</option>
-    <option value="delete">Delete Selected</option>
-    <option value="export">Export Selected</option>
-  </select>
+                                <select 
+                                    className="rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                                    value={selectedBulkAction}
+                                    onChange={(e) => setSelectedBulkAction(e.target.value)}
+                                >
+                                    <option value="">Bulk Actions</option>
+                                    <option value="delete">Delete Selected</option>
+                                    <option value="export">Export Selected</option>
+                                </select>
+                                
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handleBulkAction}
+                                    disabled={!selectedBulkAction || selectedItems.length === 0}
+                                >
+                                    Apply
+                                </Button>
 
-  <Button
-    variant="outline"
-    size="sm"
-    onClick={handleBulkAction}
-    disabled={!selectedBulkAction || selectedItems.length === 0}
-  >
-    Apply
-  </Button>
-
-  <select
-    className="rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-    value={selectedSort}
-    onChange={(e) => handleSortChange(e.target.value)}
-  >
-    <option value="">Sort By</option>
-    <option value="name-asc">Name (A-Z)</option>
-    <option value="name-desc">Name (Z-A)</option>
-  </select>
-</div>
+                                <select 
+                                    className="rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                                    value={selectedSort}
+                                    onChange={(e) => handleSortChange(e.target.value)}
+                                >
+                                    <option value="">Sort By</option>
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                </select>
+                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-foreground sm:pl-6">
+                                    Service
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Plan
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Amount
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Billing Cycle
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Next Payment
+                                </th>
+                                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">
+                                    Status
+                                </th>
+                                <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                    <span className="sr-only">Actions</span>
+                                </th>
+                            </div>
                             <table className="min-w-full divide-y divide-border">
                                 <thead className="bg-background">
                                     <tr className="divide-y divide-border">

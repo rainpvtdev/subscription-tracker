@@ -1,7 +1,7 @@
-import { createContext, ReactNode, useContext } from "react";
-import { useQuery, useMutation, UseMutationResult } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { createContext, ReactNode, useContext, useCallback, useState, useEffect } from "react";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { User as SelectUser } from "@shared/schema";
+import { apiRequest } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
@@ -12,6 +12,7 @@ type AuthContextType = {
     logoutMutation: UseMutationResult<void, Error, void>;
     registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
     forgotPasswordMutation: UseMutationResult<{ message: string }, Error, { email: string }>;
+    fetchUser: () => Promise<SelectUser | null>;
 };
 
 type LoginData = {
@@ -30,14 +31,46 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const { toast } = useToast();
-    const {
-        data: user,
-        error,
-        isLoading,
-    } = useQuery<SelectUser | null, Error>({
-        queryKey: ["/api/user"],
-        queryFn: getQueryFn({ on401: "returnNull" }),
-    });
+    const [user, setUser] = useState<SelectUser | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<Error | null>(null);
+
+    const fetchUser = useCallback(async (): Promise<SelectUser | null> => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/user', {
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    return null;
+                }
+                throw new Error('Failed to fetch user');
+            }
+
+            const data = await response.json();
+            setUser(data);
+            return data;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('Failed to fetch user');
+            setError(error);
+            console.error('Failed to fetch user:', error);
+            return null;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Update the user in the state when it changes
+    const updateUser = useCallback((newUser: SelectUser | null) => {
+        setUser(newUser);
+    }, []);
 
     const loginMutation = useMutation({
         mutationFn: async (credentials: LoginData) => {
@@ -45,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return await res.json();
         },
         onSuccess: (user: SelectUser) => {
-            queryClient.setQueryData(["/api/user"], user);
+            setUser(user);
             toast({
                 title: "Login successful",
                 description: `Welcome back, ${user.name || user.username}!`,
@@ -66,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return await res.json();
         },
         onSuccess: (user: SelectUser) => {
-            queryClient.setQueryData(["/api/user"], user);
+            setUser(user);
             toast({
                 title: "Registration successful",
                 description: `Welcome to SubTrack, ${user.name || user.username}!`,
@@ -86,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await apiRequest("POST", "/api/logout");
         },
         onSuccess: () => {
-            queryClient.setQueryData(["/api/user"], null);
+            setUser(null);
             toast({
                 title: "Logged out",
                 description: "You have been successfully logged out.",
@@ -126,13 +159,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <AuthContext.Provider
             value={{
-                user: user ?? null,
+                user,
                 isLoading,
                 error,
                 loginMutation,
                 logoutMutation,
                 registerMutation,
                 forgotPasswordMutation,
+                fetchUser,
             }}
         >
             {children}

@@ -90,23 +90,28 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
     // Create subscription mutation
     const createMutation = useMutation({
         mutationFn: async (data: FormValues) => {
-            const res = await apiRequest("POST", "/api/subscriptions", {
+            const subscriptionData = {
                 ...data,
-                status: "active", // Default status for new subscriptions
-                currency: userCurrency,
-            });
+                amount: Number(data.amount),
+                next_payment_date: new Date(data.next_payment_date).toISOString(),
+                status: "active",
+                reminder: data.reminder === "None" ? undefined : data.reminder,
+                notes: data.notes || undefined,
+            };
+            const res = await apiRequest("POST", "/api/subscriptions", subscriptionData);
             return await res.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/subscriptions"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+            queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+            queryClient.invalidateQueries({ queryKey: ["stats"] });
             toast({
                 title: "Success",
                 description: "Subscription added successfully",
+                variant: "default",
             });
             onClose();
         },
-        onError: (error) => {
+        onError: (error: Error) => {
             toast({
                 title: "Error",
                 description: error.message,
@@ -118,23 +123,31 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
     // Update subscription mutation
     const updateMutation = useMutation({
         mutationFn: async (data: FormValues) => {
-            const res = await apiRequest("PUT", `/api/subscriptions/${subscription?.id}`, {
+            if (!subscription) throw new Error("No subscription to update");
+            
+            const subscriptionData = {
                 ...data,
-                status: subscription?.status || "active",
-                currency: userCurrency,
-            });
+                amount: Number(data.amount),
+                next_payment_date: new Date(data.next_payment_date).toISOString(),
+                status: subscription.status || "active",
+                reminder: data.reminder === "None" ? undefined : data.reminder,
+                notes: data.notes || undefined,
+            };
+            
+            const res = await apiRequest("PUT", `/api/subscriptions/${subscription.id}`, subscriptionData);
             return await res.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["/api/subscriptions"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+            queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+            queryClient.invalidateQueries({ queryKey: ["stats"] });
             toast({
                 title: "Success",
                 description: "Subscription updated successfully",
+                variant: "default",
             });
             onClose();
         },
-        onError: (error) => {
+        onError: (error: Error) => {
             toast({
                 title: "Error",
                 description: error.message,
@@ -143,25 +156,14 @@ export default function SubscriptionForm({ subscription, onClose }: Subscription
         },
     });
 
-    // Form submission handler
-    const onSubmit = (values: FormValues) => {
-        try {
-            const formattedValues = {
-                ...values,
-                amount: Number(values.amount),
-                next_payment_date: new Date(values.next_payment_date).toISOString(),
-            };
-            if (subscription) {
-                updateMutation.mutate(formattedValues);
-            } else {
-                createMutation.mutate(formattedValues);
-            }
-        } catch (error) {
-            toast({
-                title: "Form Error",
-                description: error instanceof Error ? error.message : "An error occurred during form submission",
-                variant: "destructive",
-            });
+    // Handle form submission
+    const onSubmit = async (formData: FormValues) => {
+        if (subscription) {
+            // Update existing subscription
+            await updateMutation.mutateAsync(formData);
+        } else {
+            // Create new subscription
+            await createMutation.mutateAsync(formData);
         }
     };
 

@@ -1,10 +1,12 @@
 import { fetchCurrentUser } from "@/api";
 import { useQuery } from "@tanstack/react-query";
 
-export function useUser() {
+export function useUser(enabled = false) {
   const query = useQuery({
     queryKey: ["user"],
-    queryFn: fetchCurrentUser
+    queryFn: fetchCurrentUser,
+    enabled, // Only fetch when explicitly enabled
+    retry: false,
   });
 
   return {

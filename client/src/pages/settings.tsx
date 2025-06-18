@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import Sidebar from "@/components/layout/sidebar";
 import { FloatingThemeToggle } from "@/components/floating-theme-toggle";
 import { Bell, Monitor, Settings as SettingsIcon, DollarSign } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCurrency } from "@/context/currency-context";
 import { currencyOptions, type Currency } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
@@ -19,30 +19,45 @@ export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { currency, setCurrency } = useCurrency();
-  const { user: currentUser, refetch: refetchUser } = useUser();
+  const { user: currentUser, refetch: refetchUser } = useUser(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Form with default values
-  const { register, handleSubmit, setValue, watch } = useForm({
+  const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
-      emailNotifications: currentUser?.email_notifications ?? true,
-      reminderDays: currentUser?.reminder_days ?? 3,
-      currency: currentUser?.currency || currency || "USD"
+      email_notifications: true,
+      reminder_days: 3,
+      currency: currency || "USD"
     }
   });
   
   // Update form when user data loads
   useEffect(() => {
-    if (currentUser) {
-      setValue("currency", currentUser.currency || "USD");
-      setValue("emailNotifications", currentUser.email_notifications ?? true);
-      setValue("reminderDays", currentUser.reminder_days ?? 3);
-    }
-  }, [currentUser, setValue]);
+    const initializeForm = async () => {
+      if (currentUser) {
+        reset({
+          email_notifications: currentUser.email_notifications ?? true,
+          reminder_days: currentUser.reminder_days ?? 3,
+          currency: currentUser.currency || currency || "USD"
+        });
+      } else if (user?.id && !isInitialized) {
+        // Only fetch user data if we have a user ID and haven't initialized yet
+        try {
+          await refetchUser();
+          setIsInitialized(true);
+        } catch (error) {
+          console.error('Failed to fetch user settings:', error);
+        }
+      }
+    };
+    
+    initializeForm();
+  }, [currentUser, user?.id, currency, reset, isInitialized, refetchUser]);
   
   // Watch the values to provide immediate feedback
   const selectedCurrency = watch("currency") as Currency;
-  const emailNotifications = watch("emailNotifications");
-  const reminderDays = watch("reminderDays");
+  const emailNotifications = watch("email_notifications");
+  const reminderDays = watch("reminder_days");
   
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -76,8 +91,8 @@ export default function Settings() {
     // Send all settings to the backend
     updateSettingsMutation.mutate({
       currency: data.currency,
-      emailNotifications: data.emailNotifications,
-      reminderDays: parseInt(data.reminderDays, 10)
+      email_notifications: data.email_notifications,
+      reminder_days: parseInt(data.reminder_days, 10)
     });
   };
 
@@ -103,7 +118,7 @@ export default function Settings() {
                 </label>
                 <Switch 
                   checked={emailNotifications}
-                  onCheckedChange={(checked) => setValue("emailNotifications", checked)}
+                  onCheckedChange={(checked) => setValue("email_notifications", checked)}
                   className="data-[state=checked]:bg-purple-600 dark:data-[state=checked]:bg-purple-500"
                 />
               </div>
@@ -115,7 +130,7 @@ export default function Settings() {
                   type="number"
                   min="1"
                   max="30"
-                  {...register("reminderDays")}
+                  {...register("reminder_days")}
                   className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   disabled={!emailNotifications}
                 />

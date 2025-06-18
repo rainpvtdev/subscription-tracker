@@ -79,9 +79,9 @@ export default function Landing() {
                         </div>
                         <div className="mt-8 flex items-center">
                             <div className="flex -space-x-2">
-                                <img src="https://randomuser.me/api/portraits/women/12.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" loading="lazy" width="40" height="40" />
-                                <img src="https://randomuser.me/api/portraits/men/32.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" loading="lazy" width="40" height="40" />
-                                <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" loading="lazy" width="40" height="40" />
+                                <img src="https://randomuser.me/api/portraits/women/12.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" />
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" />
+                                <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-10 h-10 rounded-full border-2 border-white" alt="User" />
                             </div>
                             <p className="ml-4 text-white">Join <span className="font-bold">10,000+</span> users tracking their subscriptions</p>
                         </div>
@@ -103,7 +103,7 @@ export default function Landing() {
                                 </div>
                                 <div className="space-y-4">
                                     <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/77/Disney_Plus_logo.svg" className="w-10 h-10 object-contain" alt="Disney+" loading="lazy" width="40" height="40" />
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/77/Disney_Plus_logo.svg" className="w-10 h-10 object-contain" alt="Disney+" />
                                         <div className="ml-4 flex-grow">
                                             <h4 className="font-medium text-gray-800 dark:text-white">Disney+</h4>
                                             <p className="text-sm text-gray-500 dark:text-gray-300">Renews on May 28</p>
@@ -111,7 +111,7 @@ export default function Landing() {
                                         <span className="font-medium text-gray-800 dark:text-white">$7.99</span>
                                     </div>
                                     <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg" className="w-10 h-10 object-contain" alt="Netflix" loading="lazy" width="40" height="40" />
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg" className="w-10 h-10 object-contain" alt="Netflix" />
                                         <div className="ml-4 flex-grow">
                                             <h4 className="font-medium text-gray-800 dark:text-white">Netflix Premium</h4>
                                             <p className="text-sm text-gray-500 dark:text-gray-300">Renews on June 2</p>
@@ -119,7 +119,7 @@ export default function Landing() {
                                         <span className="font-medium text-gray-800 dark:text-white">$19.99</span>
                                     </div>
                                     <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg" className="w-10 h-10 object-contain" alt="Amazon Prime" loading="lazy" width="40" height="40" />
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg" className="w-10 h-10 object-contain" alt="Amazon Prime" />
                                         <div className="ml-4 flex-grow">
                                             <h4 className="font-medium text-gray-800 dark:text-white">Amazon Prime</h4>
                                             <p className="text-sm text-gray-500 dark:text-gray-300">Renews on June 15</p>
@@ -127,7 +127,7 @@ export default function Landing() {
                                         <span className="font-medium text-gray-800 dark:text-white">$14.99</span>
                                     </div>
                                     <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" className="w-10 h-10 object-contain" alt="Spotify" loading="lazy" width="40" height="40" />
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" className="w-10 h-10 object-contain" alt="Spotify" />
                                         <div className="ml-4 flex-grow">
                                             <h4 className="font-medium text-gray-800 dark:text-white">Spotify Premium</h4>
                                             <p className="text-sm text-gray-500 dark:text-gray-300">Renews on June 5</p>
@@ -187,7 +187,7 @@ export default function Landing() {
                     <div className="flex flex-col md:flex-row items-center mb-12">
                         <div className="md:w-1/2 mb-8 md:mb-0">
                             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md inline-block">
-                            <img src="/image/add-subscription.png" alt="Add subscription screen" className="rounded-lg w-full max-w-md" loading="lazy" />   
+                            <img src="/image/add-subscription.png" alt="Add subscription screen" className="rounded-lg w-full max-w-md" />   
                             </div>
                         </div>
                         <div className="md:w-1/2 md:pl-12">
